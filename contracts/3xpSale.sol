@@ -237,27 +237,27 @@ contract __3XPSale is
         _;
     }
 
-    // modifier onlyDev() {
-    //     require(isWhitelisted[msg.sender], "Only whitelisted");
-    //     _;
-    // }
+    modifier onlyDev() {
+        require(isWhitelisted[msg.sender], "Only whitelisted");
+        _;
+    }
 
-    // modifier onlyArtistOrDev(uint256 _projectId) {
-    //     require(
-    //         isWhitelisted[msg.sender] ||
-    //             msg.sender == projectIdToArtistAddress[_projectId],
-    //         "Only artist or whitelisted"
-    //     );
-    //     _;
-    // }
+    modifier onlyArtistOrDev(uint256 _projectId) {
+        require(
+            isWhitelisted[msg.sender] ||
+                msg.sender == projectIdToArtistAddress[_projectId],
+            "Only artist or whitelisted"
+        );
+        _;
+    }
 
-    // function addDev(address _address) external onlyOwner {
-    //     isWhitelisted[_address] = true;
-    // }
+    function addDev(address _address) external onlyOwner {
+        isWhitelisted[_address] = true;
+    }
 
-    // function removeDev(address _address) external onlyOwner {
-    //     isWhitelisted[_address] = false;
-    // }
+    function removeDev(address _address) external onlyOwner {
+        isWhitelisted[_address] = false;
+    }
 
     function addProject(
         string memory _projectName,
@@ -545,27 +545,27 @@ contract __3XPSale is
         }
     }
 
-    // function isWhitelisted(
-    //     uint256 saleId,
-    //     bytes calldata signature
-    // ) public view returns (bool, uint256) {
-    //     // check if this address is whitelisted or not
-    //     uint256 mintAmount = 0;
-    //     bool isWhitelistedBool;
+    function isWhitelisted(
+        uint256 saleId,
+        bytes calldata signature
+    ) public view returns (bool, uint256) {
+        // check if this address is whitelisted or not
+        uint256 mintAmount = 0;
+        bool isWhitelistedBool;
 
-    //     if (_verify(saleId, _hash(_msgSender(), saleId), signature)) {
-    //         isWhitelistedBool = true;
-    //         if (!_addressExist[saleId][_msgSender()]) {
-    //             // After verify the signature - check if address is already exist yet then create one
-    //             mintAmount = _saleConfig[saleId].maxPerWallet;
-    //         } else {
-    //             mintAmount = whitelisted[saleId][_msgSender()].mintAmount;
-    //         }
-    //     } else {
-    //         isWhitelistedBool = false;
-    //     }
-    //     return (isWhitelistedBool, mintAmount);
-    // }
+        if (_verify(saleId, _hash(_msgSender(), saleId), signature)) {
+            isWhitelistedBool = true;
+            if (!_addressExist[saleId][_msgSender()]) {
+                // After verify the signature - check if address is already exist yet then create one
+                mintAmount = _saleConfig[saleId].maxPerWallet;
+            } else {
+                mintAmount = whitelisted[saleId][_msgSender()].mintAmount;
+            }
+        } else {
+            isWhitelistedBool = false;
+        }
+        return (isWhitelistedBool, mintAmount);
+    }
 
     function _hash(
         address account,
@@ -587,15 +587,15 @@ contract __3XPSale is
             ECDSAUpgradeable.recover(digest, signature);
     }
 
-    // function setWhitelistUser(
-    //     uint256 saleId,
-    //     address _walletAddress,
-    //     uint256 _mintAmount
-    // ) private {
-    //     whitelisted[saleId][_walletAddress].walletAddress = _walletAddress;
-    //     whitelisted[saleId][_walletAddress].mintAmount = _mintAmount;
-    //     _addressExist[saleId][_walletAddress] = true; // winner address;
-    // }
+    function setWhitelistUser(
+        uint256 saleId,
+        address _walletAddress,
+        uint256 _mintAmount
+    ) private {
+        whitelisted[saleId][_walletAddress].walletAddress = _walletAddress;
+        whitelisted[saleId][_walletAddress].mintAmount = _mintAmount;
+        _addressExist[saleId][_walletAddress] = true; // winner address;
+    }
 
    function recordReferral(address referredBy) public {
         require(_referrals[msg.sender].referredBy == address(0), "You have already been referred.");
