@@ -42,24 +42,6 @@ enum Currency {
     ERC20
 }
 
-//   .--,-``-.                                   ,-.----.
-//  /   /     '.           ,--,     ,--,         \    /  \
-// / ../        ;          |'. \   / .`|         |   :    \
-// \ ``\  .`-    '         ; \ `\ /' / ;         |   |  .\ :
-//  \___\/   \   :         `. \  /  / .'         .   :  |: |
-//       \   :   |          \  \/  / ./          |   |   \ :
-//       /  /   /            \  \.'  /           |   : .   /
-//       \  \   \             \  ;  ;            ;   | |`-'
-//   ___ /   :   |           / \  \  \           |   | ;
-//  /   /\   /   :          ;  /\  \  \          :   ' |
-// / ,,/  ',-    .        ./__;  \  ;  \         :   : :
-// \ ''\        ;         |   : / \  \  ;        |   | :
-//  \   \     .'          ;   |/   \  ' |        `---'.|
-//   `--`-,,-'            `---'     `--`           `---`
-// 3XP - https://3XP.art
-// Follow us at https://twitter.com/3XPart
-//
-
 abstract contract __3XPMintFactory {
     function mint(
         address to,
@@ -67,7 +49,7 @@ abstract contract __3XPMintFactory {
     ) external virtual returns (uint256 nextTokenId, uint256);
 }
 
-contract __3XPSale is
+contract Sale is
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     OnlyDevMultiSigUpgradeable,
@@ -115,17 +97,25 @@ contract __3XPSale is
     uint256 constant PUBLIC_SALE_ID = 0; // public sale
 
     // projectId -> saleId -> address -> whitelisted
-    mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUser)))
-        private whitelisted;
+    mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUser))) public whitelisted;
 
     mapping(uint256 => mapping(address => bool)) public _addressExist;
 
     struct Referral {
-        address referredBy;
-        uint256 referredAt;
+        address addr;
+        uint reward;
+        bytes32 link;
+        uint referredCount;
+        mapping (bytes32 => bool) referred;
     }
 
-    mapping(address => Referral) public _referrals;
+    mapping (bytes32 => Referral) private _referrals;
+    mapping (bytes32 => bool) private referred;
+    mapping (address => uint) private pending;
+
+    uint private referredCount;
+    uint private referrersCount;
+
 
     struct Project {
         string name;
@@ -140,7 +130,7 @@ contract __3XPSale is
         bool active;
         bool locked;
         bool paused;
-        address contractAddress;
+        // address contractAddress;
     }
 
     function projectDetails(
@@ -157,8 +147,8 @@ contract __3XPSale is
             uint256 supply,
             uint256 maxSupply,
             uint256 devReserve,
-            uint256 artistReserve,
-            address contractAddress
+            uint256 artistReserve
+            // address contractAddress
         )
     {
         projectName = projects[_projectId].name;
@@ -170,7 +160,7 @@ contract __3XPSale is
         maxSupply = projects[_projectId].maxSupply;
         devReserve = projects[_projectId].devReserve;
         artistReserve = projects[_projectId].artistReserve;
-        contractAddress = projects[_projectId].contractAddress;
+        // contractAddress = projects[_projectId].artistReserve;
     }
 
     function updateProjectArtistName(
@@ -208,12 +198,12 @@ contract __3XPSale is
     //     projectIdToPricePerTokenInWei[_projectId] = _pricePerTokenInWei;
     // }
 
-    function updateProjectContractAddress(
-        uint256 _projectId,
-        address _contractAddress
-    ) public onlyUnlocked(_projectId) onlyArtist(_projectId) {
-        projects[_projectId].contractAddress = _contractAddress;
-    }
+    // function updateProjectContractAddress(
+    //     uint256 _projectId,
+    //     address _contractAddress
+    // ) public onlyUnlocked(_projectId) onlyArtist(_projectId) {
+    //     projects[_projectId].contractAddress = _contractAddress;
+    // }
 
     mapping(uint256 => Project) projects;
     mapping(uint256 => address) public projectIdToArtistAddress;
@@ -238,45 +228,47 @@ contract __3XPSale is
     }
 
     modifier onlyDev() {
-        require(isWhitelisted[msg.sender], "Only whitelisted");
+        require(msg.sender == _msgSender(), "Only whitelisted");
         _;
     }
 
-    modifier onlyArtistOrDev(uint256 _projectId) {
-        require(
-            isWhitelisted[msg.sender] ||
-                msg.sender == projectIdToArtistAddress[_projectId],
-            "Only artist or whitelisted"
-        );
-        _;
-    }
+    // modifier onlyArtistOrDev(uint256 _projectId) {
+    //     require(
+    //         isWhitelisted[msg.sender] ||
+    //             msg.sender == projectIdToArtistAddress[_projectId],
+    //         "Only artist or whitelisted"
+    //     );
+    //     _;
+    // }
 
-    function addDev(address _address) external onlyOwner {
-        isWhitelisted[_address] = true;
-    }
+    // function addDev(address _address) external onlyOwner {
+    //     isWhitelisted[_address] = true;
+    // }
 
-    function removeDev(address _address) external onlyOwner {
-        isWhitelisted[_address] = false;
-    }
+    // function removeDev(address _address) external onlyOwner {
+    //     isWhitelisted[_address] = false;
+    // }
 
     function addProject(
         string memory _projectName,
-        address _contractAddress,
+        // address _contractAddress,
         address _artistAddress,
         uint _maxSupply,
         uint _devReserve,
         uint _artistReserve
-    ) external onlyOwner {
+    ) external onlyDev {
         uint256 projectId = nextProjectId;
 
         projects[projectId].name = _projectName;
-        projects[projectId].contractAddress = _contractAddress;
+        // projects[projectId].contractAddress = _contractAddress;
         projectIdToArtistAddress[projectId] = _artistAddress;
         projects[projectId].maxSupply = _maxSupply;
         projects[projectId].devReserve = _devReserve;
         projects[projectId].artistReserve = _artistReserve;
         projects[projectId].paused = true;
         nextProjectId += 1;
+
+        console.log("projects", projectId);
 
         // TODO add price to saleConfig
         // projectIdToPricePerTokenInWei[projectId] = _pricePerTokenInWei;
@@ -547,23 +539,24 @@ contract __3XPSale is
 
     function isWhitelisted(
         uint256 saleId,
+        uint256 projectId,
         bytes calldata signature
     ) public view returns (bool, uint256) {
         // check if this address is whitelisted or not
         uint256 mintAmount = 0;
         bool isWhitelistedBool;
 
-        if (_verify(saleId, _hash(_msgSender(), saleId), signature)) {
-            isWhitelistedBool = true;
-            if (!_addressExist[saleId][_msgSender()]) {
-                // After verify the signature - check if address is already exist yet then create one
-                mintAmount = _saleConfig[saleId].maxPerWallet;
-            } else {
-                mintAmount = whitelisted[saleId][_msgSender()].mintAmount;
-            }
-        } else {
-            isWhitelistedBool = false;
-        }
+        // if (_verify(saleId, _hash(_msgSender(), saleId), signature)) {
+        //     isWhitelistedBool = true;
+        //     if (!_addressExist[saleId][_msgSender()]) {
+        //         // After verify the signature - check if address is already exist yet then create one
+        //         mintAmount = _saleConfig[saleId].maxPerWallet;
+        //     } else {
+        //         mintAmount = whitelisted[projectId][saleId][_msgSender()].mintAmount;
+        //     }
+        // } else {
+        //     isWhitelistedBool = false;
+        // }
         return (isWhitelistedBool, mintAmount);
     }
 
@@ -587,23 +580,15 @@ contract __3XPSale is
             ECDSAUpgradeable.recover(digest, signature);
     }
 
-    function setWhitelistUser(
-        uint256 saleId,
-        address _walletAddress,
-        uint256 _mintAmount
-    ) private {
-        whitelisted[saleId][_walletAddress].walletAddress = _walletAddress;
-        whitelisted[saleId][_walletAddress].mintAmount = _mintAmount;
-        _addressExist[saleId][_walletAddress] = true; // winner address;
-    }
-
-   function recordReferral(address referredBy) public {
-        require(_referrals[msg.sender].referredBy == address(0), "You have already been referred.");
-        _referrals[msg.sender] = Referral({
-            referredBy: referredBy,
-            referredAt: block.timestamp
-        });
-    }
+    // function setWhitelistUser(
+    //     uint256 saleId,
+    //     address _walletAddress,
+    //     uint256 _mintAmount
+    // ) private {
+    //     whitelisted[saleId][_walletAddress].walletAddress = _walletAddress;
+    //     whitelisted[saleId][_walletAddress].mintAmount = _mintAmount;
+    //     _addressExist[saleId][_walletAddress] = true; // winner address;
+    // }
 
     /* 
         BACK OFFICE
@@ -628,5 +613,38 @@ contract __3XPSale is
         if (!success) {
             revert __3XP__ETHTransferFailed();
         }
+    }
+
+    /*
+        Referral
+    */
+    function getBalanceOfReferrer(bytes32 link) view public returns (uint256) {
+        Referral storage refer = _referrals[link];
+        if (refer.link == link) {
+            address referAddr = address(refer.addr);
+            if (referAddr != 0) {
+                return referAddr.balance;
+            }
+        }
+
+        return 0;
+    }
+
+    function getReferrersCount() view public returns (uint256) { return referrersCount; }
+
+    function isReferrer(bytes32 link) view public returns (bool) { 
+        return _referrals[link].link == link; 
+    }
+
+    function getReferrerReward(bytes32 link) view public returns (uint) { 
+        return _referrals[link].reward; 
+    }
+
+    function getReferrerAddress(bytes32 link) view public returns (address) {
+        return _referrals[link].addr; 
+    }
+
+    function isAlreadyReferred(bytes32 link) view public returns (bool) { 
+        return _referrals[link] == true; 
     }
 }
