@@ -12,27 +12,27 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/DefaultOperatorFiltererUpgradeable.sol";
 
-error __NFTFactoryNotSet();
-error __3XP__SetDevMultiSigToZeroAddress();
-error __3XP__InvalidQueryRange();
-error __3XP__NotTokenOwner();
+error NFTFactoryNotSet();
+error SetDevMultiSigToZeroAddress();
+error InvalidQueryRange();
+error NotTokenOwner();
 
-error __3XP__NotExists();
-error __3XP__NoETHLeft();
-error __3XP__SaleNotEnabled();
-error __3XP__ETHTransferFailed();
-error __3XP__ExceedsMaxPerTransaction();
-error __3XP__ETHAmountIsNotSufficient();
-error __3XP__ExceedsMaxPerRound();
-error __3XP__CallerNotUser();
-error __3XP__ExceedMaxSupply();
-error __3XP__ExceedsDevReserve();
-error __3XP__ExceedsFCFSSupply();
-error __3XP__ExceedsMaxPerWallet();
-error __3XP__InvalidSig();
+error NotExists();
+error NoETHLeft();
+error SaleNotEnabled();
+error ETHTransferFailed();
+error ExceedsMaxPerTransaction();
+error ETHAmountIsNotSufficient();
+error ExceedsMaxPerRound();
+error CallerNotUser();
+error ExceedMaxSupply();
+error ExceedsDevReserve();
+error ExceedsFCFSSupply();
+error ExceedsMaxPerWallet();
+error InvalidSig();
 
-error __3XP__ResearchNotEnabled();
-error __3XP__IsNotTimeToFeed();
+error ResearchNotEnabled();
+error IsNotTimeToFeed();
 
 enum Currency {
     ETH,
@@ -41,35 +41,34 @@ enum Currency {
 }
 
 abstract contract NFTFactory {
+    function name() public view virtual returns (string memory);
+
+    function totalSupply() public view virtual returns (uint256);
+
     function mint(
         address to,
         uint256 amount
     ) external virtual returns (uint256 nextTokenId, uint256);
-
-    function totalSupply() public view virtual override returns (uint256);
 }
 
 contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using ECDSAUpgradeable for bytes32;
     using StringsUpgradeable for uint256;
 
-    address internal _devMultiSigWallet;
-    uint256 public nextProjectId = 1;
+    address _devMultiSigWallet;
+    uint256 public nextProjectId;
     uint256 constant PUBLIC_SALE_ID = 0; // public sale
 
     struct Project {
-        string name;
+        address contractAddress;
         string artist;
         string description;
-        string website;
-        string license;
         uint256 maxSupply;
         uint256 devReserve;
         uint256 artistReserve;
         bool active;
         bool locked;
         bool paused;
-        address contractAddress;
     }
 
     // struct PuclicSaleConfigCreate {
@@ -87,50 +86,50 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     //     uint256 maxSupply;
     // }
 
-    struct SaleConfig {
-        bool enabled;
-        uint8 maxPerWallet;
-        uint8 maxPerTransaction;
-        uint256 supply;
-        uint256 maxSupply;
-        address signerAddress;
-        Currency currency; // ETH, ERC1155, ERC20
-        address currencyAddress;
-        uint64 unitPrice;
-    }
+    // struct SaleConfig {
+    //     bool enabled;
+    //     uint8 maxPerWallet;
+    //     uint8 maxPerTransaction;
+    //     uint256 supply;
+    //     uint256 maxSupply;
+    //     address signerAddress;
+    //     Currency currency; // ETH, ERC1155, ERC20
+    //     address currencyAddress;
+    //     uint64 unitPrice;
+    // }
 
-    struct WhitelistedUser {
-        uint256 mintedAmount;
-    }
+    // struct WhitelistedUser {
+    //     uint256 mintedAmount;
+    // }
 
-    struct Referral {
-        address addr;
-        uint reward;
-        bytes32 link;
-        uint referredCount;
-        mapping(bytes32 => bool) referred;
-    }
+    // struct Referral {
+    //     address addr;
+    //     uint reward;
+    //     bytes32 link;
+    //     uint referredCount;
+    //     mapping(bytes32 => bool) referred;
+    // }
 
     mapping(address => bool) public isDev;
 
+    mapping(uint256 => Project) public projects;
+    mapping(uint256 => address) public projectIdToArtistAddress;
+
     // projectId -> saleId -> SaleConfig
-    mapping(uint256 => mapping(uint256 => SaleConfig)) private _saleConfig;
+    // mapping(uint256 => mapping(uint256 => SaleConfig)) private _saleConfig;
 
     // projectId -> saleId -> address -> whitelisted
-    mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUser)))
-        public whitelisted;
+    // mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUser)))
+    //     public whitelisted;
 
-    mapping(uint256 => mapping(address => bool)) public _addressExist;
+    // mapping(uint256 => mapping(address => bool)) public _addressExist;
 
-    mapping(bytes32 => Referral) private _referrals;
-    mapping(bytes32 => bool) private referred;
-    mapping(address => uint) private pending;
+    // mapping(bytes32 => Referral) private _referrals;
+    // mapping(bytes32 => bool) private referred;
+    // mapping(address => uint) private pending;
 
-    uint private referredCount;
-    uint private referrersCount;
-
-    mapping(uint256 => Project) projects;
-    mapping(uint256 => address) public projectIdToArtistAddress;
+    // uint private referredCount;
+    // uint private referrersCount;
 
     modifier onlyUnlocked(uint256 _projectId) {
         require(!projects[_projectId].locked, "Only unlocked");
@@ -164,7 +163,12 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         __ReentrancyGuard_init();
         isDev[_msgSender()] = true;
         _devMultiSigWallet = devMultiSigWallet_;
+        nextProjectId = 1;
     }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 
     /* 
         PROJECT
@@ -176,41 +180,38 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         view
         returns (
             string memory projectName,
+            address contractAddress,
             string memory artist,
             string memory description,
-            string memory website,
-            string memory license,
-            uint256 supply,
+            uint256 totalSupply,
             uint256 maxSupply,
             uint256 devReserve,
-            uint256 artistReserve,
-            address contractAddress
+            uint256 artistReserve
         )
     {
-        projectName = projects[_projectId].name;
+        NFTFactory nft = NFTFactory(projects[_projectId].contractAddress);
+
+        contractAddress = projects[_projectId].contractAddress;
         artist = projects[_projectId].artist;
+        projectName = nft.name();
         description = projects[_projectId].description;
-        website = projects[_projectId].website;
-        license = projects[_projectId].license;
-        totalSupply = NFTFactory(projects[_projectId].contractAddress)
-            .totalSupply();
-        supply = maxSupply = projects[_projectId].maxSupply;
+        totalSupply = nft.totalSupply();
+        maxSupply = projects[_projectId].maxSupply;
         devReserve = projects[_projectId].devReserve;
         artistReserve = projects[_projectId].artistReserve;
-        contractAddress = projects[_projectId].contractAddress;
     }
 
     function addProject(
-        string memory _projectName,
         address _contractAddress,
         address _artistAddress,
         uint _maxSupply,
         uint _devReserve,
         uint _artistReserve
-    ) public onlyDev {
+    ) external onlyDev {
+        require(_contractAddress != address(0), "Invalid contract address");
+
         uint256 projectId = nextProjectId;
 
-        projects[projectId].name = _projectName;
         projects[projectId].contractAddress = _contractAddress;
         projectIdToArtistAddress[projectId] = _artistAddress;
         projects[projectId].maxSupply = _maxSupply;
@@ -218,6 +219,14 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         projects[projectId].artistReserve = _artistReserve;
         projects[projectId].paused = true;
         nextProjectId += 1;
+    }
+
+    function updateProjectContractAddress(
+        uint256 _projectId,
+        address _contractAddress
+    ) public onlyUnlocked(_projectId) onlyArtistOrDev(_projectId) {
+        require(_contractAddress != address(0), "Invalid address");
+        projects[_projectId].contractAddress = _contractAddress;
     }
 
     function updateProjectArtistName(
@@ -234,36 +243,35 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         projects[_projectId].description = _projectDescription;
     }
 
-    function updateProjectWebsite(
+    function updateMaxSupply(
         uint256 _projectId,
-        string memory _projectWebsite
-    ) public onlyArtistOrDev(_projectId) {
-        projects[_projectId].website = _projectWebsite;
+        uint256 maxSupply_
+    ) public onlyUnlocked(_projectId) onlyDev {
+        projects[_projectId].maxSupply = maxSupply_;
     }
 
-    function updateProjectLicense(
+    function updateDevReserve(
         uint256 _projectId,
-        string memory _projectLicense
-    ) public onlyUnlocked(_projectId) onlyArtistOrDev(_projectId) {
-        projects[_projectId].license = _projectLicense;
+        uint256 devReserve_
+    ) public onlyUnlocked(_projectId) onlyDev {
+        projects[_projectId].devReserve = devReserve_;
     }
 
-    function updateProjectContractAddress(
+    function updateArtistReserve(
         uint256 _projectId,
-        address _contractAddress
-    ) public onlyUnlocked(_projectId) onlyArtistOrDev(_projectId) {
-        require(_contractAddress != address(0), "Invalid address");
-        projects[_projectId].contractAddress = _contractAddress;
+        uint256 artistReserve_
+    ) public onlyUnlocked(_projectId) onlyDev {
+        projects[_projectId].artistReserve = artistReserve_;
+    }
+
+    function toggleProjectIsActive(uint256 _projectId) external onlyDev {
+        projects[_projectId].active = !projects[_projectId].active;
     }
 
     function toggleProjectIsLocked(
         uint256 _projectId
     ) external onlyDev onlyUnlocked(_projectId) {
         projects[_projectId].locked = true;
-    }
-
-    function toggleProjectIsActive(uint256 _projectId) external onlyDev {
-        projects[_projectId].active = !projects[_projectId].active;
     }
 
     function toggleProjectIsPaused(
@@ -286,13 +294,13 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     function setDevMultiSigAddress(
         address payable _address
     ) external onlyOwner {
-        if (_address == address(0)) revert __3XP__SetDevMultiSigToZeroAddress();
+        if (_address == address(0)) revert SetDevMultiSigToZeroAddress();
         _devMultiSigWallet = _address;
     }
 
     function withdrawETHBalanceToDev() public onlyDev {
         if (address(this).balance <= 0) {
-            revert __3XP__NoETHLeft();
+            revert NoETHLeft();
         }
 
         (bool success, ) = address(_devMultiSigWallet).call{
@@ -300,7 +308,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         }("");
 
         if (!success) {
-            revert __3XP__ETHTransferFailed();
+            revert ETHTransferFailed();
         }
     }
 

@@ -3,54 +3,37 @@ pragma solidity ^0.8.19;
 
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
-import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
-import "erc721a-upgradeable/contracts/IERC721AUpgradeable.sol";
-import "erc721a-upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol";
-import "operator-filter-registry/src/upgradeable/DefaultOperatorFiltererUpgradeable.sol";
+import "erc721a/contracts/extensions/ERC721AQueryable.sol";
+import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
 
-import "./lib/OnlyDevMultiSigUpgradeable.sol";
+error SetDevMultiSigToZeroAddress();
+error NotTokenOwner();
+error NotExists();
+error NoETHLeft();
+error ETHTransferFailed();
+error NotMinter();
 
-error __3XP__SetDevMultiSigToZeroAddress();
-error __3XP__NotTokenOwner();
-error __3XP__NotExists();
-error __3XP__NoETHLeft();
-error __3XP__ETHTransferFailed();
-error __3XP__NotMinter();
-
-contract NFT is
-    OwnableUpgradeable,
-    OnlyDevMultiSigUpgradeable,
-    ERC721AQueryableUpgradeable,
-    DefaultOperatorFiltererUpgradeable,
-    ERC2981Upgradeable
-{
-    using StringsUpgradeable for uint256;
+contract NFT is Ownable, ERC721AQueryable, DefaultOperatorFilterer, ERC2981 {
+    using Strings for uint256;
 
     string private baseURI;
     address internal _devMultiSigWallet;
 
     mapping(address => bool) public minters;
 
-    function initialize(
+    constructor(
         string memory _name,
         string memory _symbol,
         string memory _initBaseURI,
         address devMultiSigWallet_,
         uint96 royalty_
-    ) public initializerERC721A initializer {
-        __OnlyDevMultiSig_init(devMultiSigWallet_);
-        __ERC721A_init(_name, _symbol);
-        __ERC721AQueryable_init();
-        __ERC2981_init();
-        __Ownable_init();
-        __DefaultOperatorFilterer_init();
-
+    ) ERC721A(_name, _symbol) {
         _devMultiSigWallet = devMultiSigWallet_;
         setBaseURI(_initBaseURI);
         _setDefaultRoyalty(devMultiSigWallet_, royalty_);
@@ -58,15 +41,9 @@ contract NFT is
 
     function supportsInterface(
         bytes4 interfaceId
-    )
-        public
-        view
-        virtual
-        override(ERC721AUpgradeable, IERC721AUpgradeable, ERC2981Upgradeable)
-        returns (bool)
-    {
+    ) public view virtual override(ERC721A, IERC721A, ERC2981) returns (bool) {
         return
-            ERC721AUpgradeable.supportsInterface(interfaceId) ||
+            ERC721A.supportsInterface(interfaceId) ||
             super.supportsInterface(interfaceId);
     }
 
@@ -78,11 +55,7 @@ contract NFT is
         address from,
         address to,
         uint256 tokenId
-    )
-        public
-        override(ERC721AUpgradeable, IERC721AUpgradeable)
-        onlyAllowedOperator(from)
-    {
+    ) public payable override(ERC721A, IERC721A) onlyAllowedOperator(from) {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -94,11 +67,7 @@ contract NFT is
         address from,
         address to,
         uint256 tokenId
-    )
-        public
-        override(ERC721AUpgradeable, IERC721AUpgradeable)
-        onlyAllowedOperator(from)
-    {
+    ) public payable override(ERC721A, IERC721A) onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
@@ -111,11 +80,7 @@ contract NFT is
         address to,
         uint256 tokenId,
         bytes memory data
-    )
-        public
-        override(ERC721AUpgradeable, IERC721AUpgradeable)
-        onlyAllowedOperator(from)
-    {
+    ) public payable override(ERC721A, IERC721A) onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId, data);
     }
 
@@ -129,14 +94,9 @@ contract NFT is
 
     function tokenURI(
         uint256 tokenId
-    )
-        public
-        view
-        override(ERC721AUpgradeable, IERC721AUpgradeable)
-        returns (string memory)
-    {
+    ) public view override(ERC721A, IERC721A) returns (string memory) {
         if (!_exists(tokenId)) {
-            revert __3XP__NotExists();
+            revert NotExists();
         }
         return string(abi.encodePacked(baseURI, tokenId.toString()));
     }
@@ -146,16 +106,15 @@ contract NFT is
     */
     function setDevMultiSigAddress(
         address payable _address
-    ) external onlyDevMultiSig {
-        if (_address == address(0)) revert __3XP__SetDevMultiSigToZeroAddress();
+    ) external onlyOwner {
+        if (_address == address(0)) revert SetDevMultiSigToZeroAddress();
         _devMultiSigWallet = _address;
-        updateDevMultiSigWallet(_address);
     }
 
     function setRoyaltyInfo(
         address receiver,
         uint96 feeBasisPoints
-    ) external onlyDevMultiSig {
+    ) external onlyOwner {
         _setDefaultRoyalty(receiver, feeBasisPoints);
     }
 
@@ -164,7 +123,7 @@ contract NFT is
         for (uint256 i = 0; i < n; ++i) {
             address to = ownerOf(tokenIds[i]);
             if (to != _msgSenderERC721A()) {
-                revert __3XP__NotTokenOwner();
+                revert NotTokenOwner();
             }
 
             _burn(tokenIds[i], true);
@@ -176,7 +135,7 @@ contract NFT is
     */
     modifier onlyMinter() {
         if (!minters[_msgSender()]) {
-            revert __3XP__NotMinter();
+            revert NotMinter();
         }
         _;
     }
@@ -198,9 +157,9 @@ contract NFT is
         minters[minter] = false;
     }
 
-    function withdrawETHBalanceToDev() public onlyDevMultiSig {
+    function withdrawETHBalanceToDev() public onlyOwner {
         if (address(this).balance <= 0) {
-            revert __3XP__NoETHLeft();
+            revert NoETHLeft();
         }
 
         (bool success, ) = address(_devMultiSigWallet).call{
@@ -208,7 +167,7 @@ contract NFT is
         }("");
 
         if (!success) {
-            revert __3XP__ETHTransferFailed();
+            revert ETHTransferFailed();
         }
     }
 }
