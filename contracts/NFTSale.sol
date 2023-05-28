@@ -71,32 +71,19 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         bool paused;
     }
 
-    // struct PuclicSaleConfigCreate {
-    //     uint8 maxPerTransaction;
-    //     uint64 unitPrice;
-    // }
-
-    // struct SaleConfigCreate {
-    //     uint256 saleId;
-    //     uint8 maxPerWallet;
-    //     uint8 maxPerTransaction;
-    //     uint64 unitPrice;
-    //     address signerAddress;
-    //     uint256 supply;
-    //     uint256 maxSupply;
-    // }
-
-    // struct SaleConfig {
-    //     bool enabled;
-    //     uint8 maxPerWallet;
-    //     uint8 maxPerTransaction;
-    //     uint256 supply;
-    //     uint256 maxSupply;
-    //     address signerAddress;
-    //     Currency currency; // ETH, ERC1155, ERC20
-    //     address currencyAddress;
-    //     uint64 unitPrice;
-    // }
+    struct SaleConfig {
+        bool enabled;
+        uint8 maxPerWallet;
+        uint8 maxPerTransaction;
+        address signerAddress;
+        uint256 currentSupplyPerRound;
+        uint256 maxSupplyPerRound;
+        address erc20Address;
+        address erc1155Address;
+        uint256 unitPriceInEth;
+        uint256 unitPriceInErc20;
+        uint256 unitPriceInErc1155;
+    }
 
     // struct WhitelistedUser {
     //     uint256 mintedAmount;
@@ -116,7 +103,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     mapping(uint256 => address) public projectIdToArtistAddress;
 
     // projectId -> saleId -> SaleConfig
-    // mapping(uint256 => mapping(uint256 => SaleConfig)) private _saleConfig;
+    mapping(uint256 => mapping(uint256 => SaleConfig)) private _saleConfig;
 
     // projectId -> saleId -> address -> whitelisted
     // mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUser)))
@@ -278,6 +265,85 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 _projectId
     ) external onlyArtistOrDev(_projectId) {
         projects[_projectId].paused = !projects[_projectId].paused;
+    }
+
+    /*
+        SALE CONFIG
+    */
+    function getPublicSaleConfig(
+        uint256 projectId_
+    ) external view returns (SaleConfig memory) {
+        return _saleConfig[projectId_][PUBLIC_SALE_ID];
+    }
+
+    function setPublicSaleConfig(
+        uint256 projectId_,
+        uint256 maxPerTransaction_,
+        address erc20Address_,
+        address erc1155Address_,
+        uint256 unitPriceInEth_,
+        uint256 unitPriceInErc20_,
+        uint256 unitPriceInErc1155_
+    ) public onlyDev {
+        _saleConfig[projectId_][PUBLIC_SALE_ID].maxPerTransaction = uint8(
+            maxPerTransaction_
+        );
+        _saleConfig[projectId_][PUBLIC_SALE_ID].erc20Address = erc20Address_;
+        _saleConfig[projectId_][PUBLIC_SALE_ID]
+            .erc1155Address = erc1155Address_;
+        _saleConfig[projectId_][PUBLIC_SALE_ID]
+            .unitPriceInEth = unitPriceInEth_;
+        _saleConfig[projectId_][PUBLIC_SALE_ID]
+            .unitPriceInErc20 = unitPriceInErc20_;
+        _saleConfig[projectId_][PUBLIC_SALE_ID]
+            .unitPriceInErc1155 = unitPriceInErc1155_;
+    }
+
+    function getSaleConfig(
+        uint256 projectId_,
+        uint256 saleId_
+    ) external view returns (SaleConfig memory) {
+        return _saleConfig[projectId_][saleId_];
+    }
+
+    function setSaleConfig(
+        uint256 projectId_,
+        uint256 saleId_,
+        uint256 maxPerWallet_,
+        uint256 maxPerTransaction_,
+        address signerAddress_,
+        uint256 currentSupplyPerRound_,
+        uint256 maxSupplyPerRound_,
+        address erc20Address_,
+        address erc1155Address_,
+        uint256 unitPriceInEth_,
+        uint256 unitPriceInErc20_,
+        uint256 unitPriceInErc1155_
+    ) public onlyDev {
+        _saleConfig[projectId_][saleId_].maxPerWallet = uint8(maxPerWallet_);
+        _saleConfig[projectId_][saleId_].maxPerTransaction = uint8(
+            maxPerTransaction_
+        );
+        _saleConfig[projectId_][saleId_].signerAddress = signerAddress_;
+        _saleConfig[projectId_][saleId_]
+            .currentSupplyPerRound = currentSupplyPerRound_;
+        _saleConfig[projectId_][saleId_].maxSupplyPerRound = maxSupplyPerRound_;
+        _saleConfig[projectId_][saleId_].erc20Address = erc20Address_;
+        _saleConfig[projectId_][saleId_].erc1155Address = erc1155Address_;
+        _saleConfig[projectId_][saleId_].unitPriceInEth = unitPriceInEth_;
+        _saleConfig[projectId_][saleId_].unitPriceInErc20 = unitPriceInErc20_;
+        _saleConfig[projectId_][saleId_]
+            .unitPriceInErc1155 = unitPriceInErc1155_;
+    }
+
+    function setSaleStatus(
+        uint256 projectId_,
+        uint256 saleId_,
+        bool enabled
+    ) external onlyDev {
+        if (_saleConfig[projectId_][saleId_].enabled != enabled) {
+            _saleConfig[projectId_][saleId_].enabled = enabled;
+        }
     }
 
     /*
