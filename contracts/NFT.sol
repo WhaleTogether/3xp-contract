@@ -23,25 +23,7 @@ error __3XP__NoETHLeft();
 error __3XP__ETHTransferFailed();
 error __3XP__NotMinter();
 
-//   .--,-``-.                                   ,-.----.
-//  /   /     '.           ,--,     ,--,         \    /  \
-// / ../        ;          |'. \   / .`|         |   :    \
-// \ ``\  .`-    '         ; \ `\ /' / ;         |   |  .\ :
-//  \___\/   \   :         `. \  /  / .'         .   :  |: |
-//       \   :   |          \  \/  / ./          |   |   \ :
-//       /  /   /            \  \.'  /           |   : .   /
-//       \  \   \             \  ;  ;            ;   | |`-'
-//   ___ /   :   |           / \  \  \           |   | ;
-//  /   /\   /   :          ;  /\  \  \          :   ' |
-// / ,,/  ',-    .        ./__;  \  ;  \         :   : :
-// \ ''\        ;         |   : / \  \  ;        |   | :
-//  \   \     .'          ;   |/   \  ' |        `---'.|
-//   `--`-,,-'            `---'     `--`           `---`
-// 3XP - https://3XP.art
-// Follow us at https://twitter.com/3XPart
-//
-
-contract __3XPMint is
+contract NFT is
     OwnableUpgradeable,
     OnlyDevMultiSigUpgradeable,
     ERC721AQueryableUpgradeable,
