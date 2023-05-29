@@ -14,22 +14,19 @@ import "operator-filter-registry/src/upgradeable/DefaultOperatorFiltererUpgradea
 
 error NFTFactoryNotSet();
 error SetDevMultiSigToZeroAddress();
-error InvalidQueryRange();
-error NotTokenOwner();
 
-error NotExists();
 error NoETHLeft();
 error SaleNotEnabled();
 error ETHTransferFailed();
 error ExceedsMaxPerTransaction();
-error ETHAmountIsNotSufficient();
+error InsufficientFunds();
 error ExceedsMaxPerRound();
 error CallerNotUser();
 error ExceedMaxSupply();
 error ExceedsDevReserve();
-error ExceedsFCFSSupply();
 error ExceedsMaxPerWallet();
 error InvalidSig();
+error InvalidMintAmount();
 
 error ResearchNotEnabled();
 error IsNotTimeToFeed();
@@ -54,6 +51,8 @@ abstract contract NFTFactory {
 contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using ECDSAUpgradeable for bytes32;
     using StringsUpgradeable for uint256;
+
+    event Minted(address recipient, uint256 projectId, uint256 amount);
 
     address _devMultiSigWallet;
     uint256 public nextProjectId;
@@ -85,9 +84,15 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 unitPriceInErc1155;
     }
 
-    // struct WhitelistedUser {
-    //     uint256 mintedAmount;
-    // }
+    struct UserMintInfo {
+        uint256 revenueShareAmount;
+        uint256 claimedRevenueShareAmount;
+        bool isExclusive;
+    }
+
+    struct WhitelistedUserInfo {
+        uint256 mintedAmount;
+    }
 
     // struct Referral {
     //     address addr;
@@ -105,11 +110,12 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     // projectId -> saleId -> SaleConfig
     mapping(uint256 => mapping(uint256 => SaleConfig)) private _saleConfig;
 
-    // projectId -> saleId -> address -> whitelisted
-    // mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUser)))
-    //     public whitelisted;
+    // projectId -> address -> UserMintInfo
+    mapping(uint256 => mapping(address => UserMintInfo)) public userMintInfo;
 
-    // mapping(uint256 => mapping(address => bool)) public _addressExist;
+    // projectId -> saleId -> address -> WhitelistedUserInfo
+    mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUserInfo)))
+        public whitelistedUserInfo;
 
     // mapping(bytes32 => Referral) private _referrals;
     // mapping(bytes32 => bool) private referred;
@@ -143,6 +149,56 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             "Only artist or Dev"
         );
         _;
+    }
+
+    modifier canMint(
+        uint256 projectId,
+        uint256 saleId,
+        uint256 amount
+    ) {
+        _guardMint(projectId, amount);
+
+        unchecked {
+            SaleConfig memory saleConfig = _saleConfig[projectId][saleId];
+            if (!saleConfig.enabled) {
+                revert SaleNotEnabled();
+            }
+
+            if (saleId == 0 && amount > saleConfig.maxPerTransaction) {
+                revert ExceedsMaxPerTransaction();
+            }
+
+            if (
+                saleId > 0 &&
+                NFTFactory(projects[projectId].contractAddress).totalSupply() +
+                    amount >
+                saleConfig.maxSupplyPerRound
+            ) {
+                revert ExceedsMaxPerRound();
+            }
+        }
+        _;
+    }
+
+    function _guardMint(
+        uint256 projectId,
+        uint256 amount
+    ) internal view virtual {
+        unchecked {
+            require(tx.origin == _msgSender(), "Can't mint from contract");
+
+            if (tx.origin != _msgSender()) {
+                revert CallerNotUser();
+            }
+
+            if (
+                NFTFactory(projects[projectId].contractAddress).totalSupply() +
+                    amount >
+                projects[projectId].maxSupply
+            ) {
+                revert ExceedMaxSupply();
+            }
+        }
     }
 
     function initialize(address devMultiSigWallet_) public initializer {
@@ -337,6 +393,122 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         if (_saleConfig[projectId_][saleId_].enabled != enabled) {
             _saleConfig[projectId_][saleId_].enabled = enabled;
         }
+    }
+
+    /*
+        MINT
+    */
+    function devMintTo(
+        uint256 projectId,
+        address to,
+        uint256 amount
+    ) external onlyOwner {
+        if (amount > projects[projectId].devReserve) {
+            revert ExceedsDevReserve();
+        }
+        projects[projectId].devReserve -= amount;
+
+        _handleMint(to, projectId, amount);
+    }
+
+    function privateMint(
+        uint256 projectId,
+        uint256 saleId,
+        uint256 amount,
+        bytes memory signature
+    ) external payable canMint(projectId, saleId, amount) {
+        if (
+            !_verify(
+                _hash(projectId, saleId, _msgSender(), amount),
+                projectId,
+                saleId,
+                signature
+            )
+        ) {
+            revert InvalidSig();
+        }
+
+        uint256 mintedAmount = whitelistedUserInfo[projectId][saleId][
+            _msgSender()
+        ].mintedAmount;
+
+        if (amount > mintedAmount) {
+            revert InvalidMintAmount();
+        }
+
+        uint256 unitPriceInEth = _saleConfig[projectId][saleId].unitPriceInEth;
+        uint256 totalPrice = amount * unitPriceInEth;
+
+        if (msg.value < totalPrice) {
+            revert InsufficientFunds();
+        }
+
+        // _calculateAndHandleRevenueShare(typeId, address(0), totalPrice);
+
+        _handleMint(_msgSender(), projectId, amount);
+    }
+
+    function publicMint(
+        uint256 projectId,
+        uint256 amount
+    )
+        external
+        payable
+        // address referralWalletAddress
+        canMint(projectId, PUBLIC_SALE_ID, amount)
+    {
+        // if (referralWalletAddress == _msgSender()) {
+        //     revert InvalidReferral();
+        // }
+        uint256 totalPrice = amount *
+            _saleConfig[projectId][PUBLIC_SALE_ID].unitPriceInEth;
+
+        if (msg.value < totalPrice) {
+            revert InsufficientFunds();
+        }
+
+        // _calculateAndHandleRevenueShare(
+        //     typeId,
+        //     referralWalletAddress,
+        //     totalPrice
+        // );
+
+        _handleMint(_msgSender(), projectId, amount);
+    }
+
+    function _handleMint(
+        address recipient,
+        uint256 projectId,
+        uint256 amount
+    ) internal {
+        NFTFactory(projects[projectId].contractAddress).mint(recipient, amount);
+        emit Minted(recipient, projectId, amount);
+    }
+
+    /*
+        WHITELIST CHECK
+    */
+    function _hash(
+        uint256 projectId,
+        uint256 saleId,
+        address account,
+        uint256 amount
+    ) internal pure returns (bytes32) {
+        return
+            ECDSAUpgradeable.toEthSignedMessageHash(
+                keccak256(abi.encodePacked(projectId, saleId, account, amount))
+            );
+    }
+
+    function _verify(
+        bytes32 digest,
+        uint256 projectId,
+        uint256 saleId,
+        bytes memory signature
+    ) internal view returns (bool) {
+        return
+            _saleConfig[projectId][saleId].signerAddress ==
+            ECDSAUpgradeable.recover(digest, signature);
     }
 
     /*
