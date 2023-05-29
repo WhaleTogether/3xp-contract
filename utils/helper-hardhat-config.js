@@ -13,15 +13,13 @@ const exclusiveSaleMaxPerWallet = 2;
 const exclusiveSaleMaxPerTransaction = 2;
 
 const contratsToDeploy = {
-  hoppiCarrot: {
-    deploy: false,
-    verify: false,
-    upgrade: false,
-    verifyUpgrade: false,
-  },
-  hoppi: {
+  nft: {
     deploy: true,
     verify: true,
+  },
+  nftSale: {
+    deploy: false,
+    verify: false,
     upgrade: false,
     verifyUpgrade: false,
   },
@@ -30,55 +28,33 @@ const contratsToDeploy = {
 const networkConfig = {
   default: {
     name: "hardhat",
-    Hoppi: {
-      contractName: "__HOPPPPPP__",
-      contractSymbol: "HOPP",
-      initBaseURI: "https://staging-alphiewhales.herokuapp.com/tokens/",
-      royalty: 500,
-      publicSaleConfig: {
-        maxPerTransaction: hoppiPublicSaleMaxPerTransaction,
-        unitPrice: ethers.utils.parseEther(
-          hoppiMainnetPublicSaleUnitPrice.toString(),
-        ),
-      },
-      exclusiveSaleConfig: {
-        saleId: EXCLUSIVE_SALE_ID,
-        maxPerWallet: exclusiveSaleMaxPerWallet,
-        maxPerTransaction: exclusiveSaleMaxPerTransaction,
-        unitPrice: ethers.utils.parseEther("0"),
-        signerAddress: "0xBf17BCb397010d16bE98B0c21F4e0183F1b61cac",
-        maxPerRound: 300,
-      },
-      adoptionPlan: {
-        enabled: false,
-        maxSupply: 1000,
-        devReserve: 50,
-        fcfsSupply: 650,
-        carrotAmountRequiredPerAdoption: 3,
-        maxPerWalletFCFS: 1,
-      },
-    },
   },
   1: {
     name: "main",
-    devMultisigAddress: "0x274851D66ea94d3E888133Ab00F98526B1772743",
-    hoppiCarrot: {
-      contractName: "HoppisCarrots",
-      contractSymbol: "CARROT",
-      initBaseURI: "https://3xp.s3.amazonaws.com/hoppis-carrots/",
-      royalty: 500,
-      publicSaleConfig: {
-        maxPerTransaction: publicSaleMaxPerTransaction,
-        unitPrice: ethers.utils.parseEther(
-          mainnetPublicSaleUnitPrice.toString(),
-        ),
-      },
-      freeMintSignerAddress: "0xBf17BCb397010d16bE98B0c21F4e0183F1b61cac",
-    },
+    // devMultisigAddress: "",
+    // nft: {
+    //   contractName: "HoppisCarrots",
+    //   contractSymbol: "CARROT",
+    //   initBaseURI: "https://3xp.s3.amazonaws.com/hoppis-carrots/",
+    //   royalty: 500,
+    //   publicSaleConfig: {
+    //     maxPerTransaction: publicSaleMaxPerTransaction,
+    //     unitPrice: ethers.utils.parseEther(
+    //       mainnetPublicSaleUnitPrice.toString(),
+    //     ),
+    //   },
+    //   freeMintSignerAddress: "0xBf17BCb397010d16bE98B0c21F4e0183F1b61cac",
+    // },
   },
   5: {
     name: "goerli",
-    devMultisigAddress: "0x274851D66ea94d3E888133Ab00F98526B1772743",
+    devMultisigAddress: "0xd1ca34C113E690c8C7fFb0502531342Dc9F1c0Cd",
+    nft: {
+      contractName: "SOMETHING_123",
+      contractSymbol: "SOME",
+      initBaseURI: "https://abc.xyz/tokens/",
+      royalty: 500,
+    },
   },
 };
 
