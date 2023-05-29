@@ -24,13 +24,14 @@ error ExceedsMaxPerRound();
 error CallerNotUser();
 error ExceedMaxSupply();
 error ExceedsDevReserve();
+error ExceedsArtistReserve();
 error InvalidSig();
 error InvalidMintAmount();
 
 error ResearchNotEnabled();
 error IsNotTimeToFeed();
 
-enum Currency {
+enum CurrencyType {
     ETH,
     ERC1155,
     ERC20
@@ -411,10 +412,25 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         _handleMint(to, projectId, amount);
     }
 
+    function artistMintTo(
+        uint256 projectId,
+        address to,
+        uint256 amount
+    ) external onlyArtistOrDev(projectId) {
+        if (amount > projects[projectId].artistReserve) {
+            revert ExceedsArtistReserve();
+        }
+        projects[projectId].artistReserve -= amount;
+
+        _handleMint(to, projectId, amount);
+    }
+
+    // TODO * Support ERC20 and ERC1155
     function privateMint(
         uint256 projectId,
         uint256 saleId,
         uint256 amount,
+        CurrencyType currencyType,
         bytes memory signature
     ) external payable canMint(projectId, saleId, amount) {
         if (
@@ -436,30 +452,19 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             revert InvalidMintAmount();
         }
 
-        uint256 unitPriceInEth = _saleConfig[projectId][saleId].unitPriceInEth;
-        uint256 totalPrice = amount * unitPriceInEth;
-
-        if (msg.value < totalPrice) {
-            revert InsufficientFunds();
-        }
-
-        // _calculateAndHandleRevenueShare(typeId, address(0), totalPrice);
-
+        _handlePayment(currencyType, projectId, saleId, amount, address(0));
         _handleMint(_msgSender(), projectId, amount);
     }
 
     function publicMint(
         uint256 projectId,
-        uint256 amount
-    )
-        external
-        payable
-        // address referralWalletAddress
-        canMint(projectId, PUBLIC_SALE_ID, amount)
-    {
-        // if (referralWalletAddress == _msgSender()) {
-        //     revert InvalidReferral();
-        // }
+        uint256 amount,
+        address referralWalletAddress
+    ) external payable canMint(projectId, PUBLIC_SALE_ID, amount) {
+        if (referralWalletAddress == _msgSender()) {
+            revert InvalidReferral();
+        }
+
         uint256 totalPrice = amount *
             _saleConfig[projectId][PUBLIC_SALE_ID].unitPriceInEth;
 
@@ -474,6 +479,65 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         // );
 
         _handleMint(_msgSender(), projectId, amount);
+    }
+
+    function _handlePayment(
+        CurrencyType currencyType,
+        uint256 projectId,
+        uint256 saleId,
+        uint256 amount,
+        address referralWalletAddress
+    ) internal {
+        SaleConfig memory saleConfig = _saleConfig[projectId][saleId];
+
+        if (currencyType == CurrencyType.ETH) {
+            uint256 unitPriceInEth = saleConfig.unitPriceInEth;
+            uint256 totalPrice = amount * unitPriceInEth;
+
+            if (msg.value < totalPrice) {
+                revert InsufficientFunds();
+            }
+        }
+        if (currencyType == CurrencyType.ERC20) {
+            uint256 unitPriceInEth = saleConfig.unitPriceInErc20;
+            uint256 totalPrice = amount * unitPriceInEth;
+
+            // if (msg.value < totalPrice) {
+            //     revert InsufficientFunds();
+            // }
+        }
+        if (currencyType == CurrencyType.ERC1155) {
+            uint256 unitPriceInEth = saleConfig.unitPriceInErc1155;
+            uint256 totalPrice = amount * unitPriceInEth;
+
+            // if (msg.value < totalPrice) {
+            //     revert InsufficientFunds();
+            // }
+        }
+
+        uint256 devShareAmount = totalPrice;
+        if (referralWalletAddress != address(0)) {
+            // uint256 revenueSharePercentage = userMintInfo[typeId][
+            //     referralWalletAddress
+            // ].isExclusive
+            //     ? _saleConfig[typeId].exclusiveRevenueSharePercentage
+            //     : _saleConfig[typeId].revenueSharePercentage;
+            // uint256 referrerRevenueShareAmount = (msg.value *
+            //     revenueSharePercentage) / 10000;
+            // devShareAmount = totalPrice - referrerRevenueShareAmount;
+            // _recordRefferal(
+            //     typeId,
+            //     referralWalletAddress,
+            //     referrerRevenueShareAmount
+            // );
+        }
+
+        // address to = _devMultiSigWalletAddress;
+        // require(to != address(0), "Transfer to zero address");
+        // (bool success, ) = payable(to).call{value: devShareAmount}("");
+        // if (!success) {
+        //     revert ETHTransferFailed();
+        // }
     }
 
     function _handleMint(
@@ -514,6 +578,39 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     /*
         Referral
     */
+    // function _calculateAndHandleRevenueShare(
+    //     uint256 typeId,
+    //     address referralWalletAddress,
+    //     uint256 totalPrice
+    // ) internal {
+    //     uint256 devShareAmount = totalPrice;
+    //     if (referralWalletAddress != address(0)) {
+    //         uint256 revenueSharePercentage = userMintInfo[typeId][
+    //             referralWalletAddress
+    //         ].isExclusive
+    //             ? _saleConfig[typeId].exclusiveRevenueSharePercentage
+    //             : _saleConfig[typeId].revenueSharePercentage;
+
+    //         uint256 referrerRevenueShareAmount = (msg.value *
+    //             revenueSharePercentage) / 10000;
+
+    //         devShareAmount = totalPrice - referrerRevenueShareAmount;
+
+    //         _recordRefferal(
+    //             typeId,
+    //             referralWalletAddress,
+    //             referrerRevenueShareAmount
+    //         );
+    //     }
+
+    //     address to = _devMultiSigWalletAddress;
+    //     require(to != address(0), "Transfer to zero address");
+    //     (bool success, ) = payable(to).call{value: devShareAmount}("");
+    //     if (!success) {
+    //         revert ETHTransferFailed();
+    //     }
+    // }
+
     // function getBalanceOfReferrer(bytes32 link) public view returns (uint256) {
     //     Referral storage refer = _referrals[link];
     //     if (refer.link == link) {
