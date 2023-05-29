@@ -310,9 +310,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 projectId_,
         uint256 saleId_,
         uint256 maxPerWallet_,
-        uint256 maxPerTransaction_,
         address signerAddress_,
-        uint256 currentSupplyPerRound_,
         uint256 maxSupplyPerRound_,
         address erc20Address_,
         address erc1155Address_,
@@ -321,12 +319,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 unitPriceInErc1155_
     ) public onlyDev {
         _saleConfig[projectId_][saleId_].maxPerWallet = uint8(maxPerWallet_);
-        _saleConfig[projectId_][saleId_].maxPerTransaction = uint8(
-            maxPerTransaction_
-        );
         _saleConfig[projectId_][saleId_].signerAddress = signerAddress_;
-        _saleConfig[projectId_][saleId_]
-            .currentSupplyPerRound = currentSupplyPerRound_;
         _saleConfig[projectId_][saleId_].maxSupplyPerRound = maxSupplyPerRound_;
         _saleConfig[projectId_][saleId_].erc20Address = erc20Address_;
         _saleConfig[projectId_][saleId_].erc1155Address = erc1155Address_;
