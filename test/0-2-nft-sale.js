@@ -84,7 +84,6 @@ describe.only("NFT Sale Contract", () => {
 
       // Assert the values are set correctly
       expect(saleConfig.enabled).to.be.false;
-      expect(saleConfig.maxPerWallet).to.equal(0);
       expect(saleConfig.maxPerTransaction).to.equal(maxPerTransaction);
       expect(saleConfig.erc20Address).to.equal(erc20Address);
       expect(saleConfig.erc1155Address).to.equal(erc1155Address);
@@ -97,7 +96,7 @@ describe.only("NFT Sale Contract", () => {
       // Set the sale config
       const projectId = 1;
       const saleId = 1;
-      const maxPerWallet = 5;
+      const maxPerTransaction = 5;
       const signerAddress = addr6.address;
       const maxSupplyPerRound = 100;
       const erc20Address = ethers.constants.AddressZero;
@@ -109,7 +108,7 @@ describe.only("NFT Sale Contract", () => {
       await nftSale.setSaleConfig(
         projectId,
         saleId,
-        maxPerWallet,
+        maxPerTransaction,
         signerAddress,
         maxSupplyPerRound,
         erc20Address,
@@ -124,7 +123,7 @@ describe.only("NFT Sale Contract", () => {
 
       // Assert the values are set correctly
       expect(saleConfig.enabled).to.be.false;
-      expect(saleConfig.maxPerWallet).to.equal(maxPerWallet);
+      expect(saleConfig.maxPerTransaction).to.equal(maxPerTransaction);
       expect(saleConfig.signerAddress).to.equal(signerAddress);
       expect(saleConfig.maxSupplyPerRound).to.equal(maxSupplyPerRound);
       expect(saleConfig.erc20Address).to.equal(erc20Address);

@@ -1,0 +1,452 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "txHash": "0xd9ed73552f1d7f0fc68cafb76858ed43b258aebc7dbf6146f77ffe5df2f8e2b9"
+  },
+  "proxies": [
+    {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "txHash": "0xa1fd702e379154254b6786555f147a02a48698c48518aaa68ad084c87b5e4c59",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "txHash": "0x984566d770434edbae6435d123981cc4d900526d65c13588f1ae8a78cf9f428a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+      "txHash": "0xa5fba509a2cbb3153482f33ef5ef9f4a0543ffe52f010449a26f420416c2eef0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9A676e781A523b5d0C0e43731313A708CB607508",
+      "txHash": "0xe9eadc0cdf8577e9364b29a663180194b0514b3194f99e34016b0f07eb7aaa20",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
+      "txHash": "0xba819aa347e198b4aca41e5f19799e291983907c891b1bb4a0f1011edbf9dbc5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
+      "txHash": "0x932eee08939cabbf91e4b7471ae76ae12ed251b852e15130498a01b26d46f745",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+      "txHash": "0x9d31b39dc9162696e46832f611fe7519f4fd97b104522d3cf1d2abcae2c7b6df",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
+      "txHash": "0xd44907a45763a5cc12b5bf26ed395122f618ffaeb9b1abf8553f420184a91fd0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9E545E3C0baAB3E08CdfD552C960A1050f373042",
+      "txHash": "0xdd7af9cce5cd3f444acc4f176933b45ac258cea5e11eeecb7a4cc4a654bfd5da",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x851356ae760d987E095750cCeb3bC6014560891C",
+      "txHash": "0x0f9ac1f2724d8961d6cc77286c2acb6f33c13e8ec906b6cecb5b7c4d6a300214",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x998abeb3E57409262aE5b751f60747921B33613E",
+      "txHash": "0xa25cff6442ad3a0d327a87c112d69486cec48ca0d6e38fe70cb3badaf14d6220",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0E801D84Fa97b50751Dbf25036d067dCf18858bF",
+      "txHash": "0x24ed0b473f845518128311684e7c6db7b73439f559f14f752fc4c1b6b69bf17f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x36C02dA8a0983159322a80FFE9F24b1acfF8B570",
+      "txHash": "0xc5c2bec98f9b4af34fac693e1c76cbb0820bd610dc66cf653ac0e578c0d2a296",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
+      "txHash": "0x1e869d520b4b6fe59fa8fb8b1f36d7b359754a8b7894b9154bd91c1568cd7d26",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCD8a1C3ba11CF5ECfa6267617243239504a98d90",
+      "txHash": "0xd643ba2101e255c9656a5290db07faba37250ddd8ba37ee3f6b4c37940267bc0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x7bc06c482DEAd17c0e297aFbC32f6e63d3846650",
+      "txHash": "0x8b0865d3f71cd9f1fe39737ae6062e7e4d30c49f9d05cb520612bb0204ec3f44",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "0b2f4e67cd55301ae38e878dd67cae1c1e7f4cb6f756201cc4d7f1de63c669df": {
+      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "txHash": "0x524b7ddb1761ab0a43c2cb4c2b55db37180e6e1d12fc79a7f77c473444b861e4",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_devMultiSigWallet",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:56"
+          },
+          {
+            "label": "nextProjectId",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:57"
+          },
+          {
+            "label": "isDev",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:103"
+          },
+          {
+            "label": "projects",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_mapping(t_uint256,t_struct(Project)5115_storage)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:105"
+          },
+          {
+            "label": "projectIdToArtistAddress",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:106"
+          },
+          {
+            "label": "_saleConfig",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(SaleConfig)5136_storage))",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:109"
+          },
+          {
+            "label": "userMintInfo",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(UserMintInfo)5143_storage))",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:112"
+          },
+          {
+            "label": "whitelistedUserInfo",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_address,t_struct(WhitelistedUserInfo)5146_storage)))",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:115"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UserMintInfo)5143_storage)": {
+            "label": "mapping(address => struct NFTSale.UserMintInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(WhitelistedUserInfo)5146_storage)": {
+            "label": "mapping(address => struct NFTSale.WhitelistedUserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(UserMintInfo)5143_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct NFTSale.UserMintInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(WhitelistedUserInfo)5146_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct NFTSale.WhitelistedUserInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_address,t_struct(WhitelistedUserInfo)5146_storage)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(address => struct NFTSale.WhitelistedUserInfo)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(SaleConfig)5136_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct NFTSale.SaleConfig))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Project)5115_storage)": {
+            "label": "mapping(uint256 => struct NFTSale.Project)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(SaleConfig)5136_storage)": {
+            "label": "mapping(uint256 => struct NFTSale.SaleConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Project)5115_storage": {
+            "label": "struct NFTSale.Project",
+            "members": [
+              {
+                "label": "contractAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "artist",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "maxSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "devReserve",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "artistReserve",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "locked",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "6"
+              },
+              {
+                "label": "paused",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(SaleConfig)5136_storage": {
+            "label": "struct NFTSale.SaleConfig",
+            "members": [
+              {
+                "label": "enabled",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "maxPerTransaction",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "signerAddress",
+                "type": "t_address",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "currentSupplyPerRound",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "maxSupplyPerRound",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "erc20Address",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "erc1155Address",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "unitPriceInEth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "unitPriceInErc20",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "unitPriceInErc1155",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(UserMintInfo)5143_storage": {
+            "label": "struct NFTSale.UserMintInfo",
+            "members": [
+              {
+                "label": "revenueShareAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "claimedRevenueShareAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "isExclusive",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(WhitelistedUserInfo)5146_storage": {
+            "label": "struct NFTSale.WhitelistedUserInfo",
+            "members": [
+              {
+                "label": "mintedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    }
+  }
+}

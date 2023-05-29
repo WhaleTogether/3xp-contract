@@ -24,7 +24,6 @@ error ExceedsMaxPerRound();
 error CallerNotUser();
 error ExceedMaxSupply();
 error ExceedsDevReserve();
-error ExceedsMaxPerWallet();
 error InvalidSig();
 error InvalidMintAmount();
 
@@ -72,7 +71,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
     struct SaleConfig {
         bool enabled;
-        uint8 maxPerWallet;
         uint8 maxPerTransaction;
         address signerAddress;
         uint256 currentSupplyPerRound;
@@ -164,10 +162,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
                 revert SaleNotEnabled();
             }
 
-            if (saleId == 0 && amount > saleConfig.maxPerTransaction) {
-                revert ExceedsMaxPerTransaction();
-            }
-
             if (
                 saleId > 0 &&
                 NFTFactory(projects[projectId].contractAddress).totalSupply() +
@@ -175,6 +169,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
                 saleConfig.maxSupplyPerRound
             ) {
                 revert ExceedsMaxPerRound();
+            }
+
+            if (amount > saleConfig.maxPerTransaction) {
+                revert ExceedsMaxPerTransaction();
             }
         }
         _;
@@ -365,7 +363,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     function setSaleConfig(
         uint256 projectId_,
         uint256 saleId_,
-        uint256 maxPerWallet_,
+        uint256 maxPerTransaction_,
         address signerAddress_,
         uint256 maxSupplyPerRound_,
         address erc20Address_,
@@ -374,7 +372,9 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 unitPriceInErc20_,
         uint256 unitPriceInErc1155_
     ) public onlyDev {
-        _saleConfig[projectId_][saleId_].maxPerWallet = uint8(maxPerWallet_);
+        _saleConfig[projectId_][saleId_].maxPerTransaction = uint8(
+            maxPerTransaction_
+        );
         _saleConfig[projectId_][saleId_].signerAddress = signerAddress_;
         _saleConfig[projectId_][saleId_].maxSupplyPerRound = maxSupplyPerRound_;
         _saleConfig[projectId_][saleId_].erc20Address = erc20Address_;
@@ -512,38 +512,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     /*
-        BACK OFFICE
-    */
-    function addDev(address _address) external onlyOwner {
-        isDev[_address] = true;
-    }
-
-    function removeDev(address _address) external onlyOwner {
-        isDev[_address] = false;
-    }
-
-    function setDevMultiSigAddress(
-        address payable _address
-    ) external onlyOwner {
-        if (_address == address(0)) revert SetDevMultiSigToZeroAddress();
-        _devMultiSigWallet = _address;
-    }
-
-    function withdrawETHBalanceToDev() public onlyDev {
-        if (address(this).balance <= 0) {
-            revert NoETHLeft();
-        }
-
-        (bool success, ) = address(_devMultiSigWallet).call{
-            value: address(this).balance
-        }("");
-
-        if (!success) {
-            revert ETHTransferFailed();
-        }
-    }
-
-    /*
         Referral
     */
     // function getBalanceOfReferrer(bytes32 link) public view returns (uint256) {
@@ -577,4 +545,36 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     // function isAlreadyReferred(bytes32 link) public view returns (bool) {
     //     return _referrals[link] == true;
     // }
+
+    /*
+        BACK OFFICE
+    */
+    function addDev(address _address) external onlyOwner {
+        isDev[_address] = true;
+    }
+
+    function removeDev(address _address) external onlyOwner {
+        isDev[_address] = false;
+    }
+
+    function setDevMultiSigAddress(
+        address payable _address
+    ) external onlyOwner {
+        if (_address == address(0)) revert SetDevMultiSigToZeroAddress();
+        _devMultiSigWallet = _address;
+    }
+
+    function withdrawETHBalanceToDev() public onlyDev {
+        if (address(this).balance <= 0) {
+            revert NoETHLeft();
+        }
+
+        (bool success, ) = address(_devMultiSigWallet).call{
+            value: address(this).balance
+        }("");
+
+        if (!success) {
+            revert ETHTransferFailed();
+        }
+    }
 }
