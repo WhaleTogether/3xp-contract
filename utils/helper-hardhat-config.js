@@ -35,7 +35,7 @@ const networkConfig = {
     // nft: {
     //   contractName: "HoppisCarrots",
     //   contractSymbol: "CARROT",
-    //   initBaseURI: "https://3xp.s3.amazonaws.com/hoppis-carrots/",
+    //   initBaseURI: "https://neomuse.s3.amazonaws.com/tokens/",
     //   royalty: 500,
     //   publicSaleConfig: {
     //     maxPerTransaction: publicSaleMaxPerTransaction,

@@ -2,20 +2,17 @@ const { ethers, upgrades } = require("hardhat");
 const { expect } = require("chai");
 const { CONTRACTS } = require("../utils/helper-hardhat-config");
 
-describe.only("NFT Sale Contract", () => {
+describe("NFT Sale Contract", () => {
   let NFT;
   let devMultisig;
   let artistAddress;
   let devAddress;
 
-  const costPerUnitPublic = 0.05;
   const royalty = 770;
 
   const maxSupply = 1000;
   const devReserve = 30;
   const artistReserve = 60;
-
-  const projectId = 1;
 
   beforeEach(async () => {
     [owner, addr1, addr2, addr3, addr4, addr5, addr6, _] =

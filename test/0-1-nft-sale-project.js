@@ -2,7 +2,7 @@ const { ethers, upgrades } = require("hardhat");
 const { expect } = require("chai");
 const { CONTRACTS } = require("../utils/helper-hardhat-config");
 
-describe.only("NFT Sale Contract", () => {
+describe("NFT Sale Contract", () => {
   let NFT;
   let devMultisig;
   let artistAddress;

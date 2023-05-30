@@ -32,8 +32,8 @@ error InvalidReferral();
 
 enum CurrencyType {
     ETH,
-    ERC1155,
-    ERC20
+    ERC20,
+    ERC1155
 }
 
 abstract contract NFTFactory {
@@ -429,7 +429,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         _handleMint(to, projectId, amount);
     }
 
-    // TODO * Support ERC20 and ERC1155
     function privateMint(
         uint256 projectId,
         uint256 saleId,
@@ -452,7 +451,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             _msgSender()
         ].mintedAmount;
 
-        if (amount > mintedAmount) {
+        whitelistedUserInfo[projectId][saleId][_msgSender()]
+            .mintedAmount += amount;
+
+        if (amount <= mintedAmount) {
             revert InvalidMintAmount();
         }
 
@@ -496,9 +498,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     ) internal {
         SaleConfig memory saleConfig = _saleConfig[projectId][saleId];
 
+        uint256 totalPrice;
         if (currencyType == CurrencyType.ETH) {
             uint256 unitPriceInEth = saleConfig.unitPriceInEth;
-            uint256 totalPrice = amount * unitPriceInEth;
+            totalPrice = amount * unitPriceInEth;
 
             if (msg.value < totalPrice) {
                 revert InsufficientFunds();
@@ -506,7 +509,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         }
         if (currencyType == CurrencyType.ERC20) {
             uint256 unitPriceInErc20 = saleConfig.unitPriceInErc20;
-            uint256 totalPrice = amount * unitPriceInErc20;
+            totalPrice = amount * unitPriceInErc20;
 
             if (
                 IERC20Upgradeable(saleConfig.erc20Address).balanceOf(
@@ -524,7 +527,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         }
         if (currencyType == CurrencyType.ERC1155) {
             uint256 unitPriceInErc1155 = saleConfig.unitPriceInErc1155;
-            uint256 totalPrice = amount * unitPriceInErc1155;
+            totalPrice = amount * unitPriceInErc1155;
 
             if (
                 IERC1155Upgradeable(saleConfig.erc1155Address).balanceOf(
@@ -545,7 +548,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         }
 
         // uint256 devShareAmount = totalPrice;
-        // if (referralWalletAddress != address(0)) {
+        // if (
+        //     referralWalletAddress != address(0) &&
+        //     currencyType != CurrencyType.ERC1155
+        // ) {
         //     // uint256 revenueSharePercentage = userMintInfo[typeId][
         //     //     referralWalletAddress
         //     // ].isExclusive
