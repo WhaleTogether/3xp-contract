@@ -68,6 +68,7 @@ describe.only("NFT Sale Contract", () => {
       const unitPriceInEth = ethers.utils.parseEther("0.1");
       const unitPriceInErc20 = 0;
       const unitPriceInErc1155 = 0;
+      const erc1155Id = 0;
 
       await nftSale.setPublicSaleConfig(
         projectId,
@@ -77,6 +78,7 @@ describe.only("NFT Sale Contract", () => {
         unitPriceInEth,
         unitPriceInErc20,
         unitPriceInErc1155,
+        erc1155Id,
       );
 
       // Get the public sale config
@@ -104,6 +106,7 @@ describe.only("NFT Sale Contract", () => {
       const unitPriceInEth = ethers.utils.parseEther("0.1");
       const unitPriceInErc20 = 0;
       const unitPriceInErc1155 = 0;
+      const erc1155Id = 0;
 
       await nftSale.setSaleConfig(
         projectId,
@@ -116,6 +119,7 @@ describe.only("NFT Sale Contract", () => {
         unitPriceInEth,
         unitPriceInErc20,
         unitPriceInErc1155,
+        erc1155Id,
       );
 
       // Get the sale config

@@ -3,6 +3,8 @@ pragma solidity ^0.8.19;
 
 import "hardhat/console.sol";
 
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
@@ -12,9 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/DefaultOperatorFiltererUpgradeable.sol";
 
-error NFTFactoryNotSet();
 error SetDevMultiSigToZeroAddress();
-
 error NoETHLeft();
 error SaleNotEnabled();
 error ETHTransferFailed();
@@ -28,8 +28,7 @@ error ExceedsArtistReserve();
 error InvalidSig();
 error InvalidMintAmount();
 
-error ResearchNotEnabled();
-error IsNotTimeToFeed();
+error InvalidReferral();
 
 enum CurrencyType {
     ETH,
@@ -81,6 +80,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 unitPriceInEth;
         uint256 unitPriceInErc20;
         uint256 unitPriceInErc1155;
+        uint256 erc1155Id;
     }
 
     struct UserMintInfo {
@@ -338,7 +338,8 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         address erc1155Address_,
         uint256 unitPriceInEth_,
         uint256 unitPriceInErc20_,
-        uint256 unitPriceInErc1155_
+        uint256 unitPriceInErc1155_,
+        uint256 erc1155Id_
     ) public onlyDev {
         _saleConfig[projectId_][PUBLIC_SALE_ID].maxPerTransaction = uint8(
             maxPerTransaction_
@@ -352,6 +353,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             .unitPriceInErc20 = unitPriceInErc20_;
         _saleConfig[projectId_][PUBLIC_SALE_ID]
             .unitPriceInErc1155 = unitPriceInErc1155_;
+        _saleConfig[projectId_][PUBLIC_SALE_ID].erc1155Id = erc1155Id_;
     }
 
     function getSaleConfig(
@@ -371,7 +373,8 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         address erc1155Address_,
         uint256 unitPriceInEth_,
         uint256 unitPriceInErc20_,
-        uint256 unitPriceInErc1155_
+        uint256 unitPriceInErc1155_,
+        uint256 erc1155Id_
     ) public onlyDev {
         _saleConfig[projectId_][saleId_].maxPerTransaction = uint8(
             maxPerTransaction_
@@ -384,6 +387,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         _saleConfig[projectId_][saleId_].unitPriceInErc20 = unitPriceInErc20_;
         _saleConfig[projectId_][saleId_]
             .unitPriceInErc1155 = unitPriceInErc1155_;
+        _saleConfig[projectId_][saleId_].erc1155Id = erc1155Id_;
     }
 
     function setSaleStatus(
@@ -459,6 +463,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     function publicMint(
         uint256 projectId,
         uint256 amount,
+        CurrencyType currencyType,
         address referralWalletAddress
     ) external payable canMint(projectId, PUBLIC_SALE_ID, amount) {
         if (referralWalletAddress == _msgSender()) {
@@ -472,12 +477,13 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             revert InsufficientFunds();
         }
 
-        // _calculateAndHandleRevenueShare(
-        //     typeId,
-        //     referralWalletAddress,
-        //     totalPrice
-        // );
-
+        _handlePayment(
+            currencyType,
+            projectId,
+            PUBLIC_SALE_ID,
+            amount,
+            referralWalletAddress
+        );
         _handleMint(_msgSender(), projectId, amount);
     }
 
@@ -499,38 +505,61 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             }
         }
         if (currencyType == CurrencyType.ERC20) {
-            uint256 unitPriceInEth = saleConfig.unitPriceInErc20;
-            uint256 totalPrice = amount * unitPriceInEth;
+            uint256 unitPriceInErc20 = saleConfig.unitPriceInErc20;
+            uint256 totalPrice = amount * unitPriceInErc20;
 
-            // if (msg.value < totalPrice) {
-            //     revert InsufficientFunds();
-            // }
+            if (
+                IERC20Upgradeable(saleConfig.erc20Address).balanceOf(
+                    _msgSender()
+                ) < totalPrice
+            ) {
+                revert InsufficientFunds();
+            }
+
+            IERC20Upgradeable(saleConfig.erc20Address).transferFrom(
+                _msgSender(),
+                address(this),
+                totalPrice
+            );
         }
         if (currencyType == CurrencyType.ERC1155) {
-            uint256 unitPriceInEth = saleConfig.unitPriceInErc1155;
-            uint256 totalPrice = amount * unitPriceInEth;
+            uint256 unitPriceInErc1155 = saleConfig.unitPriceInErc1155;
+            uint256 totalPrice = amount * unitPriceInErc1155;
 
-            // if (msg.value < totalPrice) {
-            //     revert InsufficientFunds();
-            // }
+            if (
+                IERC1155Upgradeable(saleConfig.erc1155Address).balanceOf(
+                    _msgSender(),
+                    saleConfig.erc1155Id
+                ) < totalPrice
+            ) {
+                revert InsufficientFunds();
+            }
+
+            IERC1155Upgradeable(saleConfig.erc1155Address).safeTransferFrom(
+                _msgSender(),
+                address(this),
+                saleConfig.erc1155Id,
+                totalPrice,
+                ""
+            );
         }
 
-        uint256 devShareAmount = totalPrice;
-        if (referralWalletAddress != address(0)) {
-            // uint256 revenueSharePercentage = userMintInfo[typeId][
-            //     referralWalletAddress
-            // ].isExclusive
-            //     ? _saleConfig[typeId].exclusiveRevenueSharePercentage
-            //     : _saleConfig[typeId].revenueSharePercentage;
-            // uint256 referrerRevenueShareAmount = (msg.value *
-            //     revenueSharePercentage) / 10000;
-            // devShareAmount = totalPrice - referrerRevenueShareAmount;
-            // _recordRefferal(
-            //     typeId,
-            //     referralWalletAddress,
-            //     referrerRevenueShareAmount
-            // );
-        }
+        // uint256 devShareAmount = totalPrice;
+        // if (referralWalletAddress != address(0)) {
+        //     // uint256 revenueSharePercentage = userMintInfo[typeId][
+        //     //     referralWalletAddress
+        //     // ].isExclusive
+        //     //     ? _saleConfig[typeId].exclusiveRevenueSharePercentage
+        //     //     : _saleConfig[typeId].revenueSharePercentage;
+        //     // uint256 referrerRevenueShareAmount = (msg.value *
+        //     //     revenueSharePercentage) / 10000;
+        //     // devShareAmount = totalPrice - referrerRevenueShareAmount;
+        //     // _recordRefferal(
+        //     //     typeId,
+        //     //     referralWalletAddress,
+        //     //     referrerRevenueShareAmount
+        //     // );
+        // }
 
         // address to = _devMultiSigWalletAddress;
         // require(to != address(0), "Transfer to zero address");
