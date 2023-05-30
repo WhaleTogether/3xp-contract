@@ -117,6 +117,20 @@ describe("NFT Sale Contract", () => {
       erc1155Id,
     );
 
+    await nftSale.setSaleConfig(
+      projectId,
+      2,
+      2, // maxPerTransaction
+      signerAddress,
+      maxSupplyPerRound,
+      ethers.constants.AddressZero,
+      erc1155Address,
+      ethers.utils.parseEther("0.15"), // eth price
+      ethers.utils.parseEther("20"), // erc20 price
+      unitPriceInErc1155,
+      erc1155Id,
+    );
+
     signature = await addr6.signMessage(
       hashWhitelistAccount(projectId, saleId, addr1.address, 1),
     );
@@ -237,6 +251,29 @@ describe("NFT Sale Contract", () => {
             signature,
           ),
       ).to.be.revertedWith("ExceedMaxSupply");
+    });
+
+    it("Mint Pre should fail -> ERC20 is not accept for this saleId", async () => {
+      const saleId = 2;
+      await nftSale.setSaleStatus(projectId, saleId, true);
+
+      const amount = 2;
+
+      const signature = await addr6.signMessage(
+        hashWhitelistAccount(projectId, saleId, addr1.address, amount),
+      );
+
+      await expect(
+        nftSale
+          .connect(addr1)
+          .privateMint(
+            projectId,
+            saleId,
+            amount,
+            CurrencyType.ERC20,
+            signature,
+          ),
+      ).to.be.revertedWith("Erc20NotAccept");
     });
 
     it("Mint Pre should ALL PASS", async () => {

@@ -27,6 +27,8 @@ error ExceedsDevReserve();
 error ExceedsArtistReserve();
 error InvalidSig();
 error InvalidMintAmount();
+error Erc20NotAccept();
+error Erc1155NotAccept();
 
 error InvalidReferral();
 
@@ -504,6 +506,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             uint256 unitPriceInErc20 = saleConfig.unitPriceInErc20;
             totalPrice = amount * unitPriceInErc20;
 
+            if (saleConfig.erc20Address == address(0)) {
+                revert Erc20NotAccept();
+            }
+
             if (
                 IERC20Upgradeable(saleConfig.erc20Address).balanceOf(
                     _msgSender()
@@ -521,6 +527,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         if (currencyType == CurrencyType.ERC1155) {
             uint256 unitPriceInErc1155 = saleConfig.unitPriceInErc1155;
             totalPrice = amount * unitPriceInErc1155;
+
+            if (saleConfig.erc1155Address == address(0)) {
+                revert Erc1155NotAccept();
+            }
 
             if (
                 IERC1155Upgradeable(saleConfig.erc1155Address).balanceOf(
