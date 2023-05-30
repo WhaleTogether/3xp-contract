@@ -506,7 +506,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             uint256 unitPriceInErc20 = saleConfig.unitPriceInErc20;
             totalPrice = amount * unitPriceInErc20;
 
-            if (saleConfig.erc20Address == address(0)) {
+            if (
+                saleConfig.erc20Address == address(0) ||
+                saleConfig.unitPriceInErc20 == 0
+            ) {
                 revert Erc20NotAccept();
             }
 
@@ -528,7 +531,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             uint256 unitPriceInErc1155 = saleConfig.unitPriceInErc1155;
             totalPrice = amount * unitPriceInErc1155;
 
-            if (saleConfig.erc1155Address == address(0)) {
+            if (
+                saleConfig.erc1155Address == address(0) ||
+                saleConfig.unitPriceInErc1155 == 0
+            ) {
                 revert Erc1155NotAccept();
             }
 
