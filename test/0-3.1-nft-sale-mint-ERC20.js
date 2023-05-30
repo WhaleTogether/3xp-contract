@@ -278,7 +278,6 @@ describe("NFT Sale Contract", () => {
   describe("PublicMint", () => {
     it("Mint Public should fail -> NOT Active", async () => {
       const amount = 1;
-      const cost = (0.1 * amount).toFixed(3);
 
       await expect(
         nftSale
@@ -286,11 +285,8 @@ describe("NFT Sale Contract", () => {
           .publicMint(
             projectId,
             amount,
-            CurrencyType.ETH,
+            CurrencyType.ERC20,
             ethers.constants.AddressZero,
-            {
-              value: ethers.utils.parseEther(cost.toString()),
-            },
           ),
       ).to.be.revertedWith("SaleNotEnabled");
     });
@@ -298,36 +294,50 @@ describe("NFT Sale Contract", () => {
     it("Mint Regular should fail -> ExceedsMaxPerTransaction", async () => {
       await nftSale.setSaleStatus(projectId, 0, true);
       const amount = 6; // Max per purchase is 5
-      const cost = (0.1 * amount).toFixed(3);
+
       await expect(
         nftSale
           .connect(addr1)
           .publicMint(
             projectId,
             amount,
-            CurrencyType.ETH,
+            CurrencyType.ERC20,
             ethers.constants.AddressZero,
-            {
-              value: ethers.utils.parseEther(cost.toString()),
-            },
           ),
       ).to.be.revertedWith("ExceedsMaxPerTransaction");
     });
 
-    it("Mint Regular should ALL PASS", async () => {
+    it("Mint Regular should fail -> InsufficientFunds", async () => {
       await nftSale.setSaleStatus(projectId, 0, true);
       const amount = 2;
-      const cost = (0.1 * amount).toFixed(3);
+
+      await expect(
+        nftSale
+          .connect(addr1)
+          .publicMint(
+            projectId,
+            amount,
+            CurrencyType.ERC20,
+            ethers.constants.AddressZero,
+          ),
+      ).to.be.revertedWith("InsufficientFunds");
+    });
+
+    it("Mint Regular should ALL PASS", async () => {
+      await mock
+        .connect(addr1)
+        .approve(nftSale.address, ethers.utils.parseEther("300"));
+      await mock.transfer(addr1.address, ethers.utils.parseEther("100"));
+      await nftSale.setSaleStatus(projectId, 0, true);
+      const amount = 2;
+
       const tx = await nftSale
         .connect(addr1)
         .publicMint(
           projectId,
           amount,
-          CurrencyType.ETH,
+          CurrencyType.ERC20,
           ethers.constants.AddressZero,
-          {
-            value: ethers.utils.parseEther(cost.toString()),
-          },
         );
       expect(tx).to.be.an("object");
 

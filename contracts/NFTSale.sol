@@ -472,13 +472,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             revert InvalidReferral();
         }
 
-        uint256 totalPrice = amount *
-            _saleConfig[projectId][PUBLIC_SALE_ID].unitPriceInEth;
-
-        if (msg.value < totalPrice) {
-            revert InsufficientFunds();
-        }
-
         _handlePayment(
             currencyType,
             projectId,
