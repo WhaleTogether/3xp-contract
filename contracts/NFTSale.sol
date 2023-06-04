@@ -29,7 +29,7 @@ error InvalidSig();
 error InvalidMintAmount();
 error Erc20NotAccept();
 error Erc1155NotAccept();
-
+error PayoutNotActive();
 error InvalidReferral();
 
 enum CurrencyType {
@@ -58,6 +58,8 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     address _devMultiSigWallet;
     uint256 public nextProjectId;
     uint256 constant PUBLIC_SALE_ID = 0; // public sale
+    uint256 constant defaultRevenueSharePercentage = 2500;
+    bool public isPayoutActive;
 
     struct Project {
         address contractAddress;
@@ -66,6 +68,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 maxSupply;
         uint256 devReserve;
         uint256 artistReserve;
+        uint256 revenueSharePercentage;
         bool active;
         bool locked;
         bool paused;
@@ -85,23 +88,15 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 erc1155Id;
     }
 
-    struct UserMintInfo {
+    struct ReferralInfo {
         uint256 revenueShareAmount;
         uint256 claimedRevenueShareAmount;
-        bool isExclusive;
+        uint256 referredCount;
     }
 
     struct WhitelistedUserInfo {
         uint256 mintedAmount;
     }
-
-    // struct Referral {
-    //     address addr;
-    //     uint reward;
-    //     bytes32 link;
-    //     uint referredCount;
-    //     mapping(bytes32 => bool) referred;
-    // }
 
     mapping(address => bool) public isDev;
 
@@ -111,19 +106,12 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     // projectId -> saleId -> SaleConfig
     mapping(uint256 => mapping(uint256 => SaleConfig)) private _saleConfig;
 
-    // projectId -> address -> UserMintInfo
-    mapping(uint256 => mapping(address => UserMintInfo)) public userMintInfo;
-
     // projectId -> saleId -> address -> WhitelistedUserInfo
     mapping(uint256 => mapping(uint256 => mapping(address => WhitelistedUserInfo)))
         public whitelistedUserInfo;
 
-    // mapping(bytes32 => Referral) private _referrals;
-    // mapping(bytes32 => bool) private referred;
-    // mapping(address => uint) private pending;
-
-    // uint private referredCount;
-    // uint private referrersCount;
+    // address -> referralInfo
+    mapping(address => ReferralInfo) public referralInfo;
 
     modifier onlyUnlocked(uint256 _projectId) {
         require(!projects[_projectId].locked, "Only unlocked");
@@ -250,7 +238,8 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         address _artistAddress,
         uint _maxSupply,
         uint _devReserve,
-        uint _artistReserve
+        uint _artistReserve,
+        uint _revenueSharePercentage
     ) external onlyDev {
         require(_contractAddress != address(0), "Invalid contract address");
 
@@ -262,7 +251,22 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         projects[projectId].devReserve = _devReserve;
         projects[projectId].artistReserve = _artistReserve;
         projects[projectId].paused = true;
+        if (_revenueSharePercentage == 0) {
+            projects[projectId]
+                .revenueSharePercentage = defaultRevenueSharePercentage;
+        } else {
+            projects[projectId]
+                .revenueSharePercentage = _revenueSharePercentage;
+        }
         nextProjectId += 1;
+    }
+
+    function updateProjectRevenueSharePercentage(
+        uint256 _projectId,
+        uint256 _revenueSharePercentage
+    ) public onlyUnlocked(_projectId) onlyArtistOrDev(_projectId) {
+        require(_revenueSharePercentage != 0, "Invalid amount");
+        projects[_projectId].revenueSharePercentage = _revenueSharePercentage;
     }
 
     function updateProjectContractAddress(
@@ -501,6 +505,29 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             if (msg.value < totalPrice) {
                 revert InsufficientFunds();
             }
+
+            uint256 devShareAmount = totalPrice;
+            if (
+                referralWalletAddress != address(0) &&
+                currencyType != CurrencyType.ERC1155
+            ) {
+                uint256 revenueSharePercentage = projects[projectId]
+                    .revenueSharePercentage;
+                uint256 referrerRevenueShareAmount = (msg.value *
+                    revenueSharePercentage) / 10000;
+                devShareAmount = totalPrice - referrerRevenueShareAmount;
+                _recordRefferal(
+                    referralWalletAddress,
+                    referrerRevenueShareAmount
+                );
+            }
+
+            address to = _devMultiSigWallet;
+            require(to != address(0), "Transfer to zero address");
+            (bool success, ) = payable(to).call{value: devShareAmount}("");
+            if (!success) {
+                revert ETHTransferFailed();
+            }
         }
         if (currencyType == CurrencyType.ERC20) {
             uint256 unitPriceInErc20 = saleConfig.unitPriceInErc20;
@@ -556,33 +583,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
                 ""
             );
         }
-
-        // uint256 devShareAmount = totalPrice;
-        // if (
-        //     referralWalletAddress != address(0) &&
-        //     currencyType != CurrencyType.ERC1155
-        // ) {
-        //     // uint256 revenueSharePercentage = userMintInfo[typeId][
-        //     //     referralWalletAddress
-        //     // ].isExclusive
-        //     //     ? _saleConfig[typeId].exclusiveRevenueSharePercentage
-        //     //     : _saleConfig[typeId].revenueSharePercentage;
-        //     // uint256 referrerRevenueShareAmount = (msg.value *
-        //     //     revenueSharePercentage) / 10000;
-        //     // devShareAmount = totalPrice - referrerRevenueShareAmount;
-        //     // _recordRefferal(
-        //     //     typeId,
-        //     //     referralWalletAddress,
-        //     //     referrerRevenueShareAmount
-        //     // );
-        // }
-
-        // address to = _devMultiSigWalletAddress;
-        // require(to != address(0), "Transfer to zero address");
-        // (bool success, ) = payable(to).call{value: devShareAmount}("");
-        // if (!success) {
-        //     revert ETHTransferFailed();
-        // }
     }
 
     function _handleMint(
@@ -623,38 +623,40 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     /*
         Referral
     */
-    // function _calculateAndHandleRevenueShare(
-    //     uint256 typeId,
-    //     address referralWalletAddress,
-    //     uint256 totalPrice
-    // ) internal {
-    //     uint256 devShareAmount = totalPrice;
-    //     if (referralWalletAddress != address(0)) {
-    //         uint256 revenueSharePercentage = userMintInfo[typeId][
-    //             referralWalletAddress
-    //         ].isExclusive
-    //             ? _saleConfig[typeId].exclusiveRevenueSharePercentage
-    //             : _saleConfig[typeId].revenueSharePercentage;
+    function _recordRefferal(
+        address referralWalletAddress,
+        uint256 revenueShareAmount
+    ) internal {
+        referralInfo[referralWalletAddress]
+            .revenueShareAmount += revenueShareAmount;
+        referralInfo[referralWalletAddress].referredCount += 1;
+    }
 
-    //         uint256 referrerRevenueShareAmount = (msg.value *
-    //             revenueSharePercentage) / 10000;
+    function claimPayout() external {
+        if (!isPayoutActive) {
+            revert PayoutNotActive();
+        }
 
-    //         devShareAmount = totalPrice - referrerRevenueShareAmount;
+        uint256 payoutAmount = referralInfo[_msgSender()].revenueShareAmount;
 
-    //         _recordRefferal(
-    //             typeId,
-    //             referralWalletAddress,
-    //             referrerRevenueShareAmount
-    //         );
-    //     }
+        referralInfo[_msgSender()].revenueShareAmount = 0;
+        referralInfo[_msgSender()].claimedRevenueShareAmount = payoutAmount;
+        address to = _msgSender();
 
-    //     address to = _devMultiSigWalletAddress;
-    //     require(to != address(0), "Transfer to zero address");
-    //     (bool success, ) = payable(to).call{value: devShareAmount}("");
-    //     if (!success) {
-    //         revert ETHTransferFailed();
-    //     }
-    // }
+        if (address(this).balance <= 0) {
+            revert NoETHLeft();
+        }
+
+        if (payoutAmount <= 0) {
+            revert NoETHLeft();
+        }
+
+        require(to != address(0), "Transfer to zero address");
+        (bool success, ) = payable(to).call{value: payoutAmount}("");
+        if (!success) {
+            revert ETHTransferFailed();
+        }
+    }
 
     /*
         BACK OFFICE

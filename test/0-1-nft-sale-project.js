@@ -47,8 +47,6 @@ describe("NFT Sale Contract", () => {
       devMultisig,
       royalty,
     );
-
-    // await nftSale.addProject();
   });
 
   describe("Deployment", () => {
@@ -67,6 +65,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     // Retrieve the project details
@@ -93,6 +92,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     nftFactory2 = await NFT.deploy(
@@ -124,6 +124,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     // Update the project artist name
@@ -145,6 +146,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     // Verify the initial project active status
@@ -166,6 +168,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     // Verify the initial project locked status
@@ -187,6 +190,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     // Verify the initial project paused status
@@ -263,6 +267,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     await nftSale.updateProjectDescription(projectId, "Project Description");
@@ -292,6 +297,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     // Update the project contract address

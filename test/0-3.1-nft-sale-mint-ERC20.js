@@ -79,6 +79,7 @@ describe("NFT Sale Contract", () => {
       maxSupply,
       devReserve,
       artistReserve,
+      0,
     );
 
     const maxPerTransaction = 5;
