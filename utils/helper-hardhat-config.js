@@ -14,12 +14,12 @@ const exclusiveSaleMaxPerTransaction = 2;
 
 const contratsToDeploy = {
   nft: {
-    deploy: true,
-    verify: true,
-  },
-  nftSale: {
     deploy: false,
     verify: false,
+  },
+  nftSale: {
+    deploy: true,
+    verify: true,
     upgrade: false,
     verifyUpgrade: false,
   },

@@ -656,38 +656,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     //     }
     // }
 
-    // function getBalanceOfReferrer(bytes32 link) public view returns (uint256) {
-    //     Referral storage refer = _referrals[link];
-    //     if (refer.link == link) {
-    //         address referAddr = address(refer.addr);
-    //         if (referAddr != 0) {
-    //             return referAddr.balance;
-    //         }
-    //     }
-
-    //     return 0;
-    // }
-
-    // function getReferrersCount() public view returns (uint256) {
-    //     return referrersCount;
-    // }
-
-    // function isReferrer(bytes32 link) public view returns (bool) {
-    //     return _referrals[link].link == link;
-    // }
-
-    // function getReferrerReward(bytes32 link) public view returns (uint) {
-    //     return _referrals[link].reward;
-    // }
-
-    // function getReferrerAddress(bytes32 link) public view returns (address) {
-    //     return _referrals[link].addr;
-    // }
-
-    // function isAlreadyReferred(bytes32 link) public view returns (bool) {
-    //     return _referrals[link] == true;
-    // }
-
     /*
         BACK OFFICE
     */
