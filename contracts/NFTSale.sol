@@ -678,7 +678,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         _devMultiSigWallet = _address;
     }
 
-    function withdrawETHBalanceToDev() public onlyDev {
+    function withdrawETHBalanceToDev() public onlyOwner {
         if (address(this).balance <= 0) {
             revert NoETHLeft();
         }
