@@ -332,6 +332,20 @@ describe("NFT Sale Contract", () => {
       ).to.be.revertedWith("ExceedsMaxPerTransaction");
     });
 
+    it("PublicMint should fail -> Cannot refer yourself", async () => {
+      await nftSale.setSaleStatus(projectId, 0, true);
+      const amount = 5; // Max per purchase is 5
+      const cost = (0.1 * amount).toFixed(3);
+
+      await expect(
+        nftSale
+          .connect(addr1)
+          .publicMint(projectId, amount, CurrencyType.ETH, addr1.address, {
+            value: ethers.utils.parseEther(cost.toString()),
+          }),
+      ).to.be.revertedWith("InvalidReferral");
+    });
+
     it("Mint Regular should ALL PASS", async () => {
       await nftSale.setSaleStatus(projectId, 0, true);
       const amount = 2;

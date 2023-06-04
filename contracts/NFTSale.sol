@@ -218,7 +218,8 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             uint256 totalSupply,
             uint256 maxSupply,
             uint256 devReserve,
-            uint256 artistReserve
+            uint256 artistReserve,
+            uint256 revenueSharePercentage
         )
     {
         NFTFactory nft = NFTFactory(projects[_projectId].contractAddress);
@@ -231,6 +232,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         maxSupply = projects[_projectId].maxSupply;
         devReserve = projects[_projectId].devReserve;
         artistReserve = projects[_projectId].artistReserve;
+        revenueSharePercentage = projects[_projectId].revenueSharePercentage;
     }
 
     function addProject(
@@ -687,6 +689,12 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
         if (!success) {
             revert ETHTransferFailed();
+        }
+    }
+
+    function togglePayoutStatus(bool _isPayoutActive) external onlyOwner {
+        if (isPayoutActive != _isPayoutActive) {
+            isPayoutActive = _isPayoutActive;
         }
     }
 }
