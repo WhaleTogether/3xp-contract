@@ -523,10 +523,11 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
             IERC20Upgradeable(saleConfig.erc20Address).transferFrom(
                 _msgSender(),
-                address(this),
+                _devMultiSigWallet, // address(this),
                 totalPrice
             );
         }
+
         if (currencyType == CurrencyType.ERC1155) {
             uint256 unitPriceInErc1155 = saleConfig.unitPriceInErc1155;
             totalPrice = amount * unitPriceInErc1155;
@@ -549,7 +550,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
             IERC1155Upgradeable(saleConfig.erc1155Address).safeTransferFrom(
                 _msgSender(),
-                address(this),
+                _devMultiSigWallet, // address(this),
                 saleConfig.erc1155Id,
                 totalPrice,
                 ""
