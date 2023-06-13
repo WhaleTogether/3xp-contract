@@ -69,9 +69,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 devReserve;
         uint256 artistReserve;
         uint256 revenueSharePercentage;
-        bool active;
         bool locked;
-        bool paused;
     }
 
     struct SaleConfig {
@@ -155,8 +153,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
             if (
                 saleId > 0 &&
-                NFTFactory(projects[projectId].contractAddress).totalSupply() +
-                    amount >
+                saleConfig.currentSupplyPerRound + amount >
                 saleConfig.maxSupplyPerRound
             ) {
                 revert ExceedsMaxPerRound();
@@ -174,8 +171,6 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256 amount
     ) internal view virtual {
         unchecked {
-            require(tx.origin == _msgSender(), "Can't mint from contract");
-
             if (tx.origin != _msgSender()) {
                 revert CallerNotUser();
             }
@@ -252,7 +247,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         projects[projectId].maxSupply = _maxSupply;
         projects[projectId].devReserve = _devReserve;
         projects[projectId].artistReserve = _artistReserve;
-        projects[projectId].paused = true;
+
         if (_revenueSharePercentage == 0) {
             projects[projectId]
                 .revenueSharePercentage = defaultRevenueSharePercentage;
@@ -314,20 +309,10 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         projects[_projectId].artistReserve = artistReserve_;
     }
 
-    function toggleProjectIsActive(uint256 _projectId) external onlyDev {
-        projects[_projectId].active = !projects[_projectId].active;
-    }
-
     function toggleProjectIsLocked(
         uint256 _projectId
     ) external onlyDev onlyUnlocked(_projectId) {
         projects[_projectId].locked = true;
-    }
-
-    function toggleProjectIsPaused(
-        uint256 _projectId
-    ) external onlyArtistOrDev(_projectId) {
-        projects[_projectId].paused = !projects[_projectId].paused;
     }
 
     /*
@@ -466,6 +451,8 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             revert InvalidMintAmount();
         }
 
+        _saleConfig[projectId][saleId].currentSupplyPerRound += amount;
+
         _handlePayment(currencyType, projectId, saleId, amount, address(0));
         _handleMint(_msgSender(), projectId, amount);
     }
@@ -509,10 +496,7 @@ contract NFTSale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
             }
 
             uint256 devShareAmount = totalPrice;
-            if (
-                referralWalletAddress != address(0) &&
-                currencyType != CurrencyType.ERC1155
-            ) {
+            if (referralWalletAddress != address(0)) {
                 uint256 revenueSharePercentage = projects[projectId]
                     .revenueSharePercentage;
                 uint256 referrerRevenueShareAmount = (msg.value *

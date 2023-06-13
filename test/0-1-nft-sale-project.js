@@ -137,28 +137,6 @@ describe("NFT Sale Contract", () => {
     expect(projectDetails.artist).to.equal("New Artist Name");
   });
 
-  // Test case 4: Test toggleProjectIsActive function
-  it("should toggle the project active status", async () => {
-    // Add a new project
-    await nftSale.addProject(
-      nftFactory.address,
-      artistAddress,
-      maxSupply,
-      devReserve,
-      artistReserve,
-      0,
-    );
-
-    // Verify the initial project active status
-    expect((await nftSale.projects(projectId)).active).to.be.false;
-
-    // Toggle the project active status
-    await nftSale.toggleProjectIsActive(projectId);
-
-    // Verify the updated project active status
-    expect((await nftSale.projects(projectId)).active).to.be.true;
-  });
-
   // Test case 5: Test toggleProjectIsLocked function
   it("should toggle the project locked status", async () => {
     // Add a new project
@@ -179,28 +157,6 @@ describe("NFT Sale Contract", () => {
 
     // Verify the updated project locked status
     expect((await nftSale.projects(projectId)).locked).to.be.true;
-  });
-
-  // Test case 6: Test toggleProjectIsPaused function
-  it("should toggle the project paused status", async () => {
-    // Add a new project
-    await nftSale.addProject(
-      nftFactory.address,
-      artistAddress,
-      maxSupply,
-      devReserve,
-      artistReserve,
-      0,
-    );
-
-    // Verify the initial project paused status
-    expect((await nftSale.projects(projectId)).paused).to.be.true;
-
-    // Toggle the project paused status
-    await nftSale.toggleProjectIsPaused(projectId);
-
-    // Verify the updated project paused status
-    expect((await nftSale.projects(projectId)).paused).to.be.false;
   });
 
   // Test case 7: Test addDev function
