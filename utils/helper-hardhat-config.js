@@ -14,12 +14,12 @@ const exclusiveSaleMaxPerTransaction = 2;
 
 const contratsToDeploy = {
   nft: {
-    deploy: false,
-    verify: false,
-  },
-  nftSale: {
     deploy: true,
     verify: true,
+  },
+  nftSale: {
+    deploy: false,
+    verify: false,
     upgrade: false,
     verifyUpgrade: false,
   },
@@ -50,8 +50,8 @@ const networkConfig = {
     name: "goerli",
     devMultisigAddress: "0xd1ca34C113E690c8C7fFb0502531342Dc9F1c0Cd",
     nft: {
-      contractName: "SOMETHING_123",
-      contractSymbol: "SOME",
+      contractName: "SOMETHING_3",
+      contractSymbol: "SOME3",
       initBaseURI: "https://abc.xyz/tokens/",
       royalty: 500,
     },

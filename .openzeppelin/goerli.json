@@ -24,6 +24,16 @@
       "address": "0x6186C863AcFfb2dd59fa89b898EdFff7D722028E",
       "txHash": "0xb43274675f5d2ca558554b348e3431df3284efad8079eb154faffd15d2ff3fa0",
       "kind": "transparent"
+    },
+    {
+      "address": "0x8Fb6F6b0726e80579baBd4D6a09255b7F6A60C43",
+      "txHash": "0x14563ef227c5e42629e572beb923d74fddf99a86791d2313109b5fea59d83db3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfB930cde5073737E0C20B88B103C116c372fB09d",
+      "txHash": "0x4f152da1cb05c22c9443eba73ddaaa6c956dc6ed5e7939a18554629d173c6d9b",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1116,6 +1126,371 @@
             "numberOfBytes": "288"
           },
           "t_struct(WhitelistedUserInfo)6919_storage": {
+            "label": "struct NFTSale.WhitelistedUserInfo",
+            "members": [
+              {
+                "label": "mintedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "f6f7bb0ce2ac9c98aee5591ac3621f93a860e48a1285a73d6360d49f208f996e": {
+      "address": "0xF95D5a30FcDC948AbCD78bD8689DB6cb92bA4cC8",
+      "txHash": "0x2fd369da12c2453ee8345877879f5427b9e5105ba12e0950782b1569b5549c6a",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_devMultiSigWallet",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:58"
+          },
+          {
+            "label": "nextProjectId",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:59"
+          },
+          {
+            "label": "isPayoutActive",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_bool",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:62"
+          },
+          {
+            "label": "isDev",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:99"
+          },
+          {
+            "label": "projects",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_mapping(t_uint256,t_struct(Project)6882_storage)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:101"
+          },
+          {
+            "label": "projectIdToArtistAddress",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:102"
+          },
+          {
+            "label": "_saleConfig",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(SaleConfig)6905_storage))",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:105"
+          },
+          {
+            "label": "whitelistedUserInfo",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_address,t_struct(WhitelistedUserInfo)6915_storage)))",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:108"
+          },
+          {
+            "label": "referralInfo",
+            "offset": 0,
+            "slot": "159",
+            "type": "t_mapping(t_address,t_struct(ReferralInfo)6912_storage)",
+            "contract": "NFTSale",
+            "src": "contracts/NFTSale.sol:112"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(ReferralInfo)6912_storage)": {
+            "label": "mapping(address => struct NFTSale.ReferralInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(WhitelistedUserInfo)6915_storage)": {
+            "label": "mapping(address => struct NFTSale.WhitelistedUserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(WhitelistedUserInfo)6915_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct NFTSale.WhitelistedUserInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_address,t_struct(WhitelistedUserInfo)6915_storage)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(address => struct NFTSale.WhitelistedUserInfo)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(SaleConfig)6905_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct NFTSale.SaleConfig))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Project)6882_storage)": {
+            "label": "mapping(uint256 => struct NFTSale.Project)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(SaleConfig)6905_storage)": {
+            "label": "mapping(uint256 => struct NFTSale.SaleConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Project)6882_storage": {
+            "label": "struct NFTSale.Project",
+            "members": [
+              {
+                "label": "contractAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "artist",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "maxSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "devReserve",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "artistReserve",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "revenueSharePercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "locked",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(ReferralInfo)6912_storage": {
+            "label": "struct NFTSale.ReferralInfo",
+            "members": [
+              {
+                "label": "revenueShareAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "claimedRevenueShareAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "referredCount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(SaleConfig)6905_storage": {
+            "label": "struct NFTSale.SaleConfig",
+            "members": [
+              {
+                "label": "enabled",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "maxPerTransaction",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "signerAddress",
+                "type": "t_address",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "currentSupplyPerRound",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "maxSupplyPerRound",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "erc20Address",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "erc1155Address",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "unitPriceInEth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "unitPriceInErc20",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "unitPriceInErc1155",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "erc1155Id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              }
+            ],
+            "numberOfBytes": "288"
+          },
+          "t_struct(WhitelistedUserInfo)6915_storage": {
             "label": "struct NFTSale.WhitelistedUserInfo",
             "members": [
               {
