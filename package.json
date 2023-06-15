@@ -27,6 +27,7 @@
     "@openzeppelin/contracts": "^4.7.2",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "dotenv": "^10.0.0",
+    "erc721a": "^4.2.3",
     "operator-filter-registry": "^1.2.1"
   }
 }

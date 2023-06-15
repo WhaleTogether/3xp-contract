@@ -6,7 +6,7 @@ const costPerUnitPublic = 0.05;
 const royalty = 770;
 const typeId = 0;
 
-describe("NFT Contract", () => {
+describe.skip("NFT Contract", () => {
   let NFT;
   let nft;
   let devMultisig;

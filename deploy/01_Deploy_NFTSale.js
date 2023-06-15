@@ -9,53 +9,37 @@ const func = async ({ deployments, getChainId }) => {
   const { log } = deployments;
   const chainId = await getChainId();
 
-  const { hoppi, devMultisigAddress } = networkConfig[chainId];
-  const {
-    contractName,
-    contractSymbol,
-    initBaseURI,
-    royalty,
-    publicSaleConfig,
-    exclusiveSaleConfig,
-    adoptionPlan,
-  } = hoppi;
+  const { devMultisigAddress } = networkConfig[chainId];
 
-  if (contratsToDeploy.hoppi.deploy) {
+  if (contratsToDeploy.nftSale.deploy) {
     log(
       "======================================================================",
     );
     log(
-      `========= NFT: ${contractName} [${CONTRACTS.hoppi}] ==================`,
+      `====================== NFT: [${CONTRACTS.nftSale}] ==========================`,
     );
     log(
       "======================================================================",
     );
 
-    const NFT = await ethers.getContractFactory(CONTRACTS.hoppi);
+    const NFTSale = await ethers.getContractFactory(CONTRACTS.nftSale);
     console.log("Deploying...");
-    const nft = await upgrades.deployProxy(
-      NFT,
+    const nftSale = await upgrades.deployProxy(
+      NFTSale,
       [
-        contractName,
-        contractSymbol,
-        initBaseURI,
         devMultisigAddress, // dev multisig
-        royalty,
-        publicSaleConfig,
-        exclusiveSaleConfig,
-        adoptionPlan,
       ],
       {
         initializer: "initialize",
       },
     );
-    await nft.deployed();
+    await nftSale.deployed();
 
     const addresses = {
-      proxy: nft.address,
-      admin: await upgrades.erc1967.getAdminAddress(nft.address),
+      proxy: nftSale.address,
+      admin: await upgrades.erc1967.getAdminAddress(nftSale.address),
       implementation: await upgrades.erc1967.getImplementationAddress(
-        nft.address,
+        nftSale.address,
       ),
     };
     console.log("Addresses:", addresses);
@@ -63,15 +47,15 @@ const func = async ({ deployments, getChainId }) => {
     const networkName = networkConfig[chainId]["name"];
 
     fs.writeFileSync(
-      `${networkName}-deployment-hoppi-addresses.json`,
+      `${networkName}-deployment-nftSale-addresses.json`,
       JSON.stringify(addresses, null, 2),
     );
 
     log("=====================================================");
-    log(`You have deployed an NFT contract to "${nft.address}"`);
+    log(`You have deployed an NFT sale contract to "${nftSale.address}"`);
     log("=====================================================");
 
-    if (contratsToDeploy.hoppi.verify) {
+    if (contratsToDeploy.nftSale.verify) {
       await run("verify:verify", {
         address: addresses.implementation,
         constructorArguments: [],
@@ -80,7 +64,7 @@ const func = async ({ deployments, getChainId }) => {
       console.log("***********************************");
       console.log("***********************************");
       console.log("\n");
-      console.log(`[Contract] ${CONTRACTS.hoppi} has been verify!`);
+      console.log(`[Contract] ${CONTRACTS.nftSale} has been verify!`);
       console.log("\n");
       console.log("***********************************");
       console.log("***********************************");
@@ -90,7 +74,7 @@ const func = async ({ deployments, getChainId }) => {
       "======================================================================",
     );
     log(
-      `====================== [SKIPPED]: ${contractName} [${CONTRACTS.hoppi}] ==========================`,
+      `====================== [SKIPPED]: [${CONTRACTS.nftSale}] ==========================`,
     );
     log(
       "======================================================================",
